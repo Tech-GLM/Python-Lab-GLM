@@ -1,0 +1,5486 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Python Lab Tracker</title>
+
+  <!-- Pyodide for advanced libraries -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.29.4/full/pyodide.js"></script>
+
+  <!-- Brython for fast browser-based Python -->
+  <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.js"></script>
+
+  <style>
+    :root {
+      --navy: #0B1F3A;
+      --blue: #1E4E8C;
+      --gold: #D9A441;
+      --cream: #F7F3E8;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #637083;
+      --error: #b42318;
+      --warning: #a15c07;
+      --success: #067647;
+      --border: #d8dee8;
+      --editor-bg: #101827;
+      --editor-ink: #edf2f7;
+      --gutter: #1d2939;
+      --logo-green: #46b748;
+      --logo-cyan: #32bad2;
+      --soft-green: #e9f8ea;
+      --soft-cyan: #e8f8fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        linear-gradient(135deg, rgba(70, 183, 72, 0.08), transparent 28%),
+        linear-gradient(315deg, rgba(50, 186, 210, 0.10), transparent 30%),
+        var(--cream);
+      color: var(--ink);
+    }
+
+    header {
+      background:
+        radial-gradient(circle at top left, rgba(70, 183, 72, 0.28), transparent 32%),
+        radial-gradient(circle at top right, rgba(50, 186, 210, 0.30), transparent 30%),
+        linear-gradient(135deg, var(--navy), var(--blue));
+      color: white;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      border-bottom: 5px solid var(--gold);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 280px;
+    }
+
+    .logo-box {
+      width: 96px;
+      height: 68px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .logo-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+
+    .logo-fallback {
+      font-weight: 900;
+      font-size: 20px;
+      color: var(--navy);
+      letter-spacing: 1px;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.1;
+    }
+
+    .brand-text p {
+      margin: 6px 0 0;
+      font-size: 14px;
+      opacity: 0.92;
+      max-width: 620px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .header-badge::before {
+      content: '';
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--logo-green);
+      box-shadow: 14px 0 0 var(--logo-cyan);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(11, 31, 58, 0.18);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--gold), #f4c95d);
+      color: #1c1c1c;
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--navy);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .danger {
+      background: #fee4e2;
+      color: var(--error);
+    }
+
+    .success-button {
+      background: linear-gradient(135deg, var(--logo-green), #77d879);
+      color: white;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    @media (max-width: 980px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 10px 28px rgba(11, 31, 58, 0.10);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+
+    .card-title {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      background:
+        linear-gradient(90deg, rgba(70, 183, 72, 0.08), rgba(50, 186, 210, 0.08));
+    }
+
+    .card-title h2 {
+      margin: 0;
+      font-size: 17px;
+      color: var(--navy);
+    }
+
+    .editor-shell {
+      height: 650px;
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      background: var(--editor-bg);
+      color: var(--editor-ink);
+      overflow: hidden;
+    }
+
+    .line-numbers {
+      background: var(--gutter);
+      color: #98a2b3;
+      padding: 16px 8px;
+      text-align: right;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 15px;
+      line-height: 24px;
+      overflow: hidden;
+      user-select: none;
+      border-right: 1px solid #344054;
+    }
+
+    .editor-layer {
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #highlight,
+    #editor {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 16px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 15px;
+      line-height: 24px;
+      white-space: pre;
+      tab-size: 2;
+      overflow: auto;
+    }
+
+    #highlight {
+      pointer-events: none;
+      color: var(--editor-ink);
+    }
+
+    #editor {
+      background: transparent;
+      color: transparent;
+      caret-color: white;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    #editor::selection {
+      background: rgba(217, 164, 65, 0.35);
+    }
+
+    .kw {
+      color: #7dd3fc;
+      font-weight: 700;
+    }
+
+    .builtin {
+      color: #f9a8d4;
+      font-weight: 700;
+    }
+
+    .num {
+      color: #fbbf24;
+    }
+
+    .str {
+      color: #86efac;
+    }
+
+    .com {
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    .op {
+      color: #f0abfc;
+    }
+
+    .side {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .panel-body {
+      padding: 14px 16px;
+    }
+
+    .status {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .status.ok {
+      background: #dcfae6;
+      color: var(--success);
+    }
+
+    .status.bad {
+      background: #fee4e2;
+      color: var(--error);
+    }
+
+    .status.neutral {
+      background: #eef4ff;
+      color: var(--blue);
+    }
+
+    pre.output {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 150px;
+      max-height: 300px;
+      white-space: pre-wrap;
+      overflow: auto;
+      font-family: Consolas, Monaco, monospace;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .pill {
+      background: #eef4ff;
+      color: var(--blue);
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .engine-select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 8px 0 10px;
+      font-weight: 700;
+      color: var(--navy);
+      background: white;
+    }
+
+    .engine-help {
+      border-radius: 12px;
+      padding: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .library-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .library-grid label {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 13px;
+      background: #f8fafc;
+      cursor: pointer;
+    }
+
+    .library-grid input {
+      margin-right: 6px;
+    }
+
+    .disabled-panel {
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    input.package-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    #guiPreview {
+      min-height: 140px;
+      background: #f8fafc;
+      border: 1px dashed #98a2b3;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    #guiPreview button {
+      margin: 4px;
+      background: var(--blue);
+      color: white;
+    }
+
+    #guiPreview input {
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 4px;
+    }
+
+    #plotArea {
+      min-height: 80px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      overflow: auto;
+    }
+
+    #plotArea img {
+      max-width: 100%;
+      display: block;
+      margin: 8px 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .student-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .form-row label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: white;
+      color: var(--ink);
+    }
+
+    .form-row textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .exercise-list {
+      display: grid;
+      gap: 8px;
+      max-height: 380px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .exercise-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .exercise-card:hover {
+      transform: translateY(-1px);
+      border-color: var(--blue);
+    }
+
+    .exercise-card.active {
+      background: linear-gradient(135deg, var(--soft-green), var(--soft-cyan));
+      border-color: var(--logo-green);
+      box-shadow: inset 4px 0 0 var(--logo-green);
+    }
+
+    .exercise-card h3 {
+      margin: 0 0 4px;
+      color: var(--navy);
+      font-size: 14px;
+    }
+
+    .exercise-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .exercise-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .level-tag,
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .level-tag {
+      background: #eef4ff;
+      color: var(--blue);
+    }
+
+    .status-tag {
+      background: #fff6db;
+      color: #7a4b00;
+    }
+
+    .progress-box {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .progress-box strong {
+      color: var(--navy);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .small-button {
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+    }
+
+
+
+    /* =========================================================
+       STUDENT-FRIENDLY WORKSPACE OVERRIDES
+       Live results first; code and learning task second;
+       configuration tools last.
+       ========================================================= */
+    body {
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 12px 18px;
+      position: relative;
+    }
+
+    .brand {
+      min-width: 240px;
+    }
+
+    .logo-box {
+      width: 76px;
+      height: 58px;
+      border-radius: 16px;
+    }
+
+    .brand-text h1 {
+      font-size: 23px;
+    }
+
+    .brand-text p {
+      max-width: 560px;
+      margin-top: 4px;
+    }
+
+    .toolbar {
+      align-items: center;
+    }
+
+    .toolbar button {
+      min-height: 42px;
+    }
+
+    .page-shell {
+      width: min(1680px, 100%);
+      margin: 0 auto;
+      padding: 14px 18px 24px;
+    }
+
+    .student-quickbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(230px, 1.2fr) 105px auto auto minmax(220px, 1fr);
+      gap: 10px;
+      align-items: end;
+      padding: 12px;
+      margin-bottom: 14px;
+      background: rgba(255, 255, 255, 0.97);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(11, 31, 58, 0.08);
+    }
+
+    .quick-field label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--navy);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .quick-field input {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: white;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .quick-field select {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: white;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .quickbar-status {
+      min-width: 0;
+    }
+
+    .quickbar-status .status {
+      margin: 0;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+    }
+
+    .results-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin: 0 2px 8px;
+    }
+
+    .results-heading h2 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 19px;
+    }
+
+    .results-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .results-dashboard {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .result-card {
+      min-width: 0;
+      border-radius: 18px;
+    }
+
+    .result-card .card-title {
+      padding: 10px 12px;
+    }
+
+    .result-card .card-title h2 {
+      font-size: 15px;
+    }
+
+    .result-card .panel-body {
+      padding: 10px;
+    }
+
+    .result-card pre.output,
+    .result-card #guiPreview,
+    .result-card #plotArea {
+      height: 210px;
+      min-height: 210px;
+      max-height: 210px;
+      margin: 0;
+      overflow: auto;
+    }
+
+    .result-card pre.output {
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .result-card #guiPreview,
+    .result-card #plotArea {
+      background: #fbfcfe;
+    }
+
+    .result-focus-button {
+      padding: 6px 9px;
+      font-size: 11px;
+      background: white;
+      color: var(--blue);
+      border: 1px solid var(--border);
+    }
+
+    .results-dashboard.has-focus .result-card:not(.result-focus) {
+      display: none;
+    }
+
+    .results-dashboard .result-card.result-focus {
+      grid-column: 1 / -1;
+    }
+
+    .results-dashboard .result-card.result-focus pre.output,
+    .results-dashboard .result-card.result-focus #guiPreview,
+    .results-dashboard .result-card.result-focus #plotArea {
+      height: 420px;
+      min-height: 420px;
+      max-height: 60vh;
+    }
+
+    main.workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, .68fr);
+      gap: 14px;
+      padding: 0;
+      margin: 0;
+    }
+
+    .editor-card {
+      min-width: 0;
+    }
+
+    .editor-card .card-title {
+      position: relative;
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .editor-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .workspace-tabs {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .workspace-tab {
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      box-shadow: none;
+    }
+
+    .workspace-tab:hover {
+      box-shadow: none;
+    }
+
+    .workspace-tab.active {
+      background: var(--navy);
+      color: white;
+    }
+
+    .workspace-pane[hidden],
+    .editor-actions[hidden] {
+      display: none !important;
+    }
+
+    .python-shell {
+      height: clamp(470px, 60vh, 720px);
+      display: grid;
+      grid-template-rows: 1fr auto auto;
+      background: #08111f;
+      color: #e5edf7;
+      font-family: Consolas, Monaco, monospace;
+    }
+
+    .shell-transcript {
+      margin: 0;
+      padding: 18px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: inherit;
+      font-size: 15px;
+      line-height: 1.55;
+      color: #dce7f5;
+    }
+
+    .shell-composer {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      padding: 12px 14px;
+      background: #101b2d;
+      border-top: 1px solid #344054;
+    }
+
+    .shell-prompt {
+      color: #86efac;
+      font-weight: 900;
+      line-height: 24px;
+      padding-top: 9px;
+      user-select: none;
+    }
+
+    #shellInput {
+      width: 100%;
+      min-height: 42px;
+      max-height: 170px;
+      resize: vertical;
+      padding: 9px 10px;
+      border: 1px solid #475467;
+      border-radius: 10px;
+      outline: none;
+      background: #0b1424;
+      color: #f8fafc;
+      caret-color: white;
+      font: inherit;
+      font-size: 15px;
+      line-height: 22px;
+      tab-size: 4;
+    }
+
+    #shellInput:focus {
+      border-color: var(--logo-cyan);
+      box-shadow: 0 0 0 3px rgba(50, 186, 210, 0.18);
+    }
+
+    .shell-run-button {
+      min-height: 42px;
+      white-space: nowrap;
+    }
+
+    .shell-help {
+      margin: 0;
+      padding: 9px 14px 11px;
+      background: #101b2d;
+      color: #98a2b3;
+      border-top: 1px solid rgba(71, 84, 103, 0.45);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .shell-help strong {
+      color: #d0d5dd;
+    }
+
+    .week2-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(30, 78, 140, 0.25);
+      border-left: 7px solid var(--blue);
+      border-radius: 18px;
+      background:
+        linear-gradient(110deg, rgba(30, 78, 140, 0.10), rgba(50, 186, 210, 0.06)),
+        white;
+      box-shadow: 0 8px 22px rgba(11, 31, 58, 0.08);
+    }
+
+    .lab-mode-switcher {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(220px, 1.4fr);
+      gap: 10px;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+
+    .lab-mode-button {
+      min-height: 78px;
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      padding: 12px 14px;
+      text-align: left;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: white;
+      color: var(--navy);
+      box-shadow: 0 7px 18px rgba(11, 31, 58, 0.07);
+    }
+
+    .lab-mode-button:hover {
+      transform: translateY(-1px);
+      border-color: #9bb5da;
+    }
+
+    .lab-mode-button.active {
+      border-color: var(--blue);
+      background: #eef4ff;
+      box-shadow: 0 8px 22px rgba(30, 78, 140, 0.14);
+    }
+
+    .lab-mode-button .mode-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--navy);
+      color: white;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .lab-mode-button.active .mode-icon {
+      background: var(--blue);
+    }
+
+    .lab-mode-button strong,
+    .lab-mode-button small {
+      display: block;
+    }
+
+    .lab-mode-button strong {
+      font-size: 14px;
+    }
+
+    .lab-mode-button small {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .lab-mode-description {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    body.sandbox-mode [data-evidence-only],
+    body.evidence-mode [data-sandbox-only] {
+      display: none !important;
+    }
+
+    body.sandbox-mode .student-quickbar {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sandbox-tip-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .sandbox-tip-list li + li {
+      margin-top: 6px;
+    }
+
+    .week2-hero h2 {
+      margin: 0 0 4px;
+      color: var(--navy);
+      font-size: 22px;
+    }
+
+    .week2-hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .evidence-badges {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .evidence-badge {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #eef4ff;
+      color: var(--blue);
+      border: 1px solid #c7d7f2;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .evidence-badge.gold {
+      background: #fff7df;
+      color: #7a4b00;
+      border-color: #f0d38a;
+    }
+
+    .submission-confirmation {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 15px 17px;
+      margin: -2px 0 16px;
+      border: 1px solid #86d5a5;
+      border-left: 7px solid var(--success);
+      border-radius: 16px;
+      background: #eaf8ef;
+      color: #065f46;
+      box-shadow: 0 8px 22px rgba(6, 95, 70, 0.09);
+    }
+
+    .submission-confirmation[hidden] {
+      display: none;
+    }
+
+    .submission-confirmation.warning {
+      border-color: #f0d38a;
+      border-left-color: var(--gold);
+      background: #fff8e8;
+      color: #674300;
+    }
+
+    .submission-confirmation-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--success);
+      color: white;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .submission-confirmation.warning .submission-confirmation-icon {
+      background: var(--gold);
+      color: #4b3300;
+    }
+
+    .submission-confirmation h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+    .submission-confirmation p {
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    body.submission-locked #week2EvidenceForm input:disabled,
+    body.submission-locked #week2EvidenceForm textarea:disabled,
+    body.submission-locked #week2EvidenceForm select:disabled,
+    body.submission-locked #editor:disabled,
+    body.submission-locked #shellInput:disabled {
+      opacity: 1;
+      color: #344054;
+      -webkit-text-fill-color: #344054;
+      background: #f2f4f7;
+      cursor: not-allowed;
+    }
+
+    .editor-lock-notice {
+      padding: 11px 14px;
+      background: #fff7df;
+      color: #7a4b00;
+      border-bottom: 1px solid #f0d38a;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .editor-lock-notice[hidden] {
+      display: none;
+    }
+
+    .workspace-locked {
+      opacity: 0.5;
+      pointer-events: none;
+      filter: grayscale(0.25);
+    }
+
+    .evidence-side-status {
+      display: grid;
+      gap: 9px;
+    }
+
+    .side-step {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .side-step-letter {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--navy);
+      color: white;
+      font-weight: 900;
+    }
+
+    .side-step strong {
+      display: block;
+      color: var(--navy);
+      font-size: 13px;
+    }
+
+    .side-step small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .step-state {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--muted);
+    }
+
+    .step-state.done {
+      color: var(--success);
+    }
+
+    .evidence-progress-track {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e6eaf0;
+    }
+
+    .evidence-progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--logo-green), var(--logo-cyan));
+      transition: width 0.25s ease;
+    }
+
+    .evidence-rule {
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .evidence-rule strong {
+      color: var(--navy);
+    }
+
+    .week2-evidence-card {
+      margin-top: 14px;
+      overflow: visible;
+    }
+
+    .evidence-stepper {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0;
+      padding: 0;
+      border-bottom: 1px solid var(--border);
+      background: #f3f6fa;
+    }
+
+    .evidence-step-button {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      min-height: 66px;
+      padding: 10px 12px;
+      border-radius: 0;
+      border-right: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      box-shadow: none;
+    }
+
+    .evidence-step-button:last-child {
+      border-right: none;
+    }
+
+    .evidence-step-button:hover {
+      transform: none;
+      box-shadow: none;
+      background: rgba(30, 78, 140, 0.07);
+    }
+
+    .evidence-step-button.active {
+      background: var(--navy);
+      color: white;
+    }
+
+    .evidence-step-button.complete:not(.active) {
+      background: #eaf8ef;
+      color: var(--success);
+    }
+
+    .evidence-step-letter {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid currentColor;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .evidence-step-button span:last-child {
+      min-width: 0;
+    }
+
+    .evidence-step-button strong,
+    .evidence-step-button small {
+      display: block;
+    }
+
+    .evidence-step-button strong {
+      font-size: 13px;
+    }
+
+    .evidence-step-button small {
+      margin-top: 2px;
+      font-size: 10px;
+      opacity: 0.82;
+    }
+
+    .evidence-panel {
+      display: none;
+      padding: 20px;
+    }
+
+    .evidence-panel.active {
+      display: block;
+    }
+
+    .evidence-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .evidence-panel-header h3 {
+      margin: 0 0 4px;
+      color: var(--navy);
+      font-size: 20px;
+    }
+
+    .evidence-panel-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .required-label {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #fff1f0;
+      color: var(--error);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .evidence-question {
+      margin: 16px 0;
+    }
+
+    .evidence-question > label,
+    .evidence-question > .question-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--navy);
+      font-weight: 900;
+      line-height: 1.4;
+    }
+
+    .evidence-question textarea,
+    .evidence-question input[type="text"] {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: white;
+      color: var(--ink);
+      font: inherit;
+      line-height: 1.45;
+    }
+
+    .evidence-question textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .evidence-question textarea.code-response {
+      min-height: 220px;
+      background: #101827;
+      color: #edf2f7;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      tab-size: 4;
+    }
+
+    .evidence-question textarea:focus,
+    .evidence-question input[type="text"]:focus {
+      outline: none;
+      border-color: var(--logo-cyan);
+      box-shadow: 0 0 0 3px rgba(50, 186, 210, 0.14);
+    }
+
+    .ipo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .ipo-field {
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .ipo-field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .ipo-field textarea {
+      min-height: 88px;
+    }
+
+    .evidence-code-block {
+      margin: 12px 0 16px;
+      padding: 15px;
+      overflow: auto;
+      border: 1px solid #344054;
+      border-radius: 13px;
+      background: #101827;
+      color: #edf2f7;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 14px;
+      line-height: 1.55;
+      white-space: pre;
+    }
+
+    .evidence-callout {
+      margin: 12px 0;
+      padding: 11px 13px;
+      border-left: 4px solid var(--gold);
+      border-radius: 10px;
+      background: #fff8e8;
+      color: #674300;
+      line-height: 1.45;
+    }
+
+    .evidence-callout.green {
+      border-left-color: var(--success);
+      background: #eaf8ef;
+      color: #065f46;
+    }
+
+    .evidence-actions,
+    .evidence-nav {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .evidence-nav {
+      justify-content: space-between;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .file-evidence-grid {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto;
+      gap: 9px;
+      align-items: end;
+      margin: 14px 0;
+    }
+
+    .file-evidence-grid label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .file-evidence-grid input[type="text"] {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .file-confirmation {
+      padding: 9px 11px;
+      border-radius: 10px;
+      background: #eef4ff;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .file-confirmation.done {
+      background: #dcfae6;
+      color: var(--success);
+    }
+
+    .run-record-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .run-record {
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #f8fafc;
+    }
+
+    .run-record h4 {
+      margin: 0 0 9px;
+      color: var(--navy);
+    }
+
+    .run-record label {
+      display: block;
+      margin: 8px 0 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .run-record textarea {
+      width: 100%;
+      min-height: 76px;
+      resize: vertical;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: white;
+      color: var(--ink);
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+    }
+
+    .fix-log {
+      display: grid;
+      gap: 9px;
+    }
+
+    .fix-row {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: 9px;
+      align-items: stretch;
+    }
+
+    .fix-number {
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--navy);
+      color: white;
+      font-weight: 900;
+    }
+
+    .fix-row textarea {
+      width: 100%;
+      min-height: 76px;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      resize: vertical;
+      font: inherit;
+    }
+
+    .debug-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .debug-choice {
+      display: flex;
+      gap: 7px;
+      align-items: flex-start;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: #f8fafc;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .integrity-check {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 13px;
+      border: 1px solid #f0d38a;
+      border-radius: 12px;
+      background: #fff8e8;
+      color: #674300;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .final-checklist {
+      display: grid;
+      gap: 7px;
+      margin-top: 16px;
+    }
+
+    .final-check-item {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .final-check-item.done {
+      background: #eaf8ef;
+      color: var(--success);
+      border-color: #b7e4c7;
+    }
+
+    .evidence-save-bar {
+      position: sticky;
+      bottom: 10px;
+      z-index: 5;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      margin: 0 16px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 10px 28px rgba(11, 31, 58, 0.15);
+      backdrop-filter: blur(8px);
+    }
+
+    .evidence-save-bar p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .editor-shell {
+      height: clamp(470px, 60vh, 720px);
+    }
+
+    .task-sidebar {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      min-width: 0;
+    }
+
+    .exercise-list {
+      max-height: 330px;
+    }
+
+    .exercise-card {
+      padding: 11px;
+    }
+
+    .settings-area {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    details.settings-card {
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(11,31,58,.06);
+      overflow: hidden;
+    }
+
+    details.settings-card > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 14px;
+      color: var(--navy);
+      font-weight: 900;
+      background: linear-gradient(90deg, rgba(70,183,72,.08), rgba(50,186,210,.08));
+      border-bottom: 1px solid transparent;
+    }
+
+    details.settings-card > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.settings-card > summary::after {
+      content: '＋';
+      float: right;
+      color: var(--blue);
+    }
+
+    details.settings-card[open] > summary {
+      border-bottom-color: var(--border);
+    }
+
+    details.settings-card[open] > summary::after {
+      content: '−';
+    }
+
+    .settings-note {
+      margin: 12px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .keyboard-hint {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1180px) {
+      .student-quickbar {
+        grid-template-columns: 1fr 1.2fr auto auto;
+      }
+
+      .quickbar-status {
+        grid-column: 1 / -1;
+      }
+
+      .results-dashboard {
+        grid-template-columns: 1.25fr 1fr;
+      }
+
+      #outputCard {
+        grid-column: 1 / -1;
+      }
+
+      .result-card pre.output,
+      .result-card #guiPreview,
+      .result-card #plotArea {
+        height: 190px;
+        min-height: 190px;
+        max-height: 190px;
+      }
+
+      main.workspace-grid {
+        grid-template-columns: minmax(0, 1fr) 330px;
+      }
+
+      .settings-area {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .student-quickbar {
+        grid-template-columns: 1fr 1.2fr 110px auto auto;
+      }
+
+      .debug-choice-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .page-shell {
+        padding: 12px;
+      }
+
+      header {
+        padding: 12px;
+      }
+
+      .toolbar {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .toolbar button {
+        flex: 1 1 150px;
+      }
+
+      .results-dashboard {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      main.workspace-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .task-sidebar {
+        grid-row: 1;
+      }
+
+      .editor-card {
+        grid-row: 2;
+      }
+
+      .exercise-list {
+        max-height: 230px;
+      }
+
+      .editor-shell {
+        height: 560px;
+      }
+
+      .python-shell {
+        height: 560px;
+      }
+
+      .week2-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .lab-mode-switcher {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .lab-mode-description {
+        grid-column: 1 / -1;
+      }
+
+      .evidence-badges {
+        justify-content: flex-start;
+      }
+
+      .file-evidence-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .file-evidence-grid > div:first-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .lab-mode-switcher {
+        grid-template-columns: 1fr;
+      }
+
+      .lab-mode-description {
+        grid-column: auto;
+      }
+
+      .brand-text p,
+      .header-badge {
+        display: none;
+      }
+
+      .student-quickbar {
+        grid-template-columns: 1fr;
+      }
+
+      .quickbar-status {
+        grid-column: auto;
+      }
+
+      .student-quickbar button {
+        width: 100%;
+      }
+
+      .results-heading {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .results-dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      #outputCard {
+        grid-column: auto;
+      }
+
+      .result-card pre.output,
+      .result-card #guiPreview,
+      .result-card #plotArea {
+        height: 180px;
+        min-height: 180px;
+        max-height: 180px;
+      }
+
+      .editor-shell {
+        height: 500px;
+        grid-template-columns: 42px 1fr;
+      }
+
+      .python-shell {
+        height: 500px;
+      }
+
+      .editor-heading {
+        width: 100%;
+      }
+
+      .workspace-tabs {
+        width: 100%;
+      }
+
+      .workspace-tab {
+        flex: 1;
+      }
+
+      .shell-composer {
+        grid-template-columns: auto minmax(0, 1fr);
+      }
+
+      .shell-run-button {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
+      .line-numbers {
+        padding-left: 4px;
+        padding-right: 5px;
+        font-size: 13px;
+      }
+
+      #highlight,
+      #editor {
+        padding: 13px 10px;
+        font-size: 14px;
+      }
+
+      .settings-area {
+        grid-template-columns: 1fr;
+      }
+
+      .editor-actions .keyboard-hint {
+        width: 100%;
+      }
+
+      .evidence-stepper {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .evidence-step-button:nth-child(2) {
+        border-right: none;
+      }
+
+      .evidence-step-button:nth-child(-n+2) {
+        border-bottom: 1px solid var(--border);
+      }
+
+      .evidence-panel {
+        padding: 15px 12px;
+      }
+
+      .evidence-panel-header {
+        flex-direction: column;
+      }
+
+      .ipo-grid,
+      .run-record-grid,
+      .debug-choice-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .fix-row {
+        grid-template-columns: 36px 1fr;
+      }
+
+      .fix-row textarea:last-child {
+        grid-column: 2;
+      }
+
+      .file-evidence-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .file-evidence-grid > div:first-child {
+        grid-column: auto;
+      }
+
+      .evidence-save-bar {
+        position: static;
+        flex-direction: column;
+        align-items: stretch;
+        margin: 0 10px 10px;
+      }
+
+      .evidence-save-bar .evidence-actions button {
+        flex: 1 1 140px;
+      }
+    }
+
+  </style>
+</head>
+
+<body class="sandbox-mode">
+  <header>
+    <div class="brand">
+      <div class="logo-box">
+        <img id="brandLogo" alt="Institutional logo">
+        <div id="logoFallback" class="logo-fallback">GLM</div>
+      </div>
+
+      <div class="brand-text">
+        <h1>GLM Python Lab</h1>
+        <p id="headerModeSubtitle">Practice Sandbox · Try Python safely</p>
+        <div class="header-badge">Practice and evidence workspace</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="primary" id="runButton" onclick="runCurrentWorkspace()">▶ Run Python</button>
+      <button class="success-button" id="saveRunButton" data-evidence-only onclick="submitWeek2Evidence()">✓ Submit Activity</button>
+      <button class="secondary" id="saveDraftButton" data-evidence-only onclick="saveWeek2Draft()">Save Draft</button>
+      <button class="secondary" onclick="downloadPythonFile()">Download .py</button>
+      <button class="secondary" onclick="document.getElementById('pythonFileInput').click()">Open .py</button>
+      <button class="secondary" onclick="copyCode()">Copy Code</button>
+      <button class="danger" onclick="clearCurrentWorkspace()">Clear</button>
+      <input id="pythonFileInput" type="file" accept=".py,text/x-python" hidden onchange="handlePythonFileOpen(event)">
+    </div>
+  </header>
+
+  <div class="page-shell">
+    <section class="lab-mode-switcher" aria-label="Choose the Python Lab mode">
+      <button
+        type="button"
+        class="lab-mode-button active"
+        id="sandboxModeButton"
+        aria-pressed="true"
+        onclick="switchLabMode('sandbox')"
+      >
+        <span class="mode-icon" aria-hidden="true">&gt;_</span>
+        <span><strong>Practice Sandbox</strong><small>Try code freely. Nothing here is submitted.</small></span>
+      </button>
+      <button
+        type="button"
+        class="lab-mode-button"
+        id="evidenceModeButton"
+        aria-pressed="false"
+        onclick="switchLabMode('evidence')"
+      >
+        <span class="mode-icon" aria-hidden="true">✓</span>
+        <span><strong>Evidence Submission</strong><small>Complete, save, and submit the assigned evidence.</small></span>
+      </button>
+      <div class="lab-mode-description" id="labModeDescription">
+        Sandbox work stays in this browser and is kept separate from submitted evidence.
+      </div>
+    </section>
+
+    <section class="student-quickbar" aria-label="Student profile and runtime status">
+      <div class="quick-field" data-evidence-only>
+        <label for="studentName">Student name</label>
+        <input id="studentName" autocomplete="name" placeholder="Full name">
+      </div>
+
+      <div class="quick-field" data-evidence-only>
+        <label for="studentEmail">GLM email</label>
+        <input id="studentEmail" autocomplete="email" placeholder="student@glm.edu.co">
+      </div>
+
+      <div class="quick-field" data-evidence-only>
+        <label for="studentSection">Section</label>
+        <select id="studentSection">
+          <option value="">Select</option>
+          <option value="9A">9A</option>
+          <option value="9B">9B</option>
+          <option value="9C">9C</option>
+        </select>
+      </div>
+
+      <button class="secondary" data-evidence-only onclick="saveStudentProfile()">Save profile</button>
+      <button class="secondary" data-evidence-only onclick="loadWeek2Evidence()">Load evidence</button>
+
+      <div class="quickbar-status">
+        <div id="status" class="status neutral">Starting browser Python...</div>
+      </div>
+      <span id="profilePill" class="pill" data-evidence-only style="display:none;">Not saved</span>
+    </section>
+
+    <section class="week2-hero" aria-labelledby="week2Title">
+      <div>
+        <h2 id="week2Title">Practice Sandbox</h2>
+        <p id="modeHeroText">Use the Script Editor or Python Shell to test ideas, make mistakes, and run code without affecting your evidence submission.</p>
+      </div>
+      <div class="evidence-badges" aria-label="Activity information">
+        <span class="evidence-badge" data-sandbox-only>Safe practice</span>
+        <span class="evidence-badge" data-sandbox-only>Not submitted</span>
+        <span class="evidence-badge" data-evidence-only>Week 2</span>
+        <span class="evidence-badge" data-evidence-only>Learning Evidence</span>
+        <span class="evidence-badge gold" data-evidence-only>100 points</span>
+        <span class="evidence-badge" id="submissionStatusBadge" data-evidence-only>Draft not saved</span>
+      </div>
+    </section>
+
+    <section
+      class="submission-confirmation"
+      id="submissionConfirmationPanel"
+      role="status"
+      aria-live="polite"
+      hidden
+    >
+      <div class="submission-confirmation-icon" aria-hidden="true">✓</div>
+      <div>
+        <h3 id="submissionConfirmationTitle">Evidence sent successfully</h3>
+        <p id="submissionConfirmationText"></p>
+      </div>
+    </section>
+
+    <div class="results-heading">
+      <div>
+        <h2>Live Results</h2>
+        <p id="resultsModeText">Sandbox output is for practice and is not included in an evidence submission.</p>
+      </div>
+      <span class="pill" id="enginePill">Brython selected</span>
+    </div>
+
+    <section class="results-dashboard" id="liveResults" aria-label="Python execution results">
+      <section class="card result-card" id="outputCard">
+        <div class="card-title">
+          <h2>1. Output</h2>
+          <button class="result-focus-button" onclick="toggleResultFocus('outputCard', this)">Expand</button>
+        </div>
+        <div class="panel-body">
+          <pre class="output" id="output">No output yet.</pre>
+        </div>
+      </section>
+
+      <section class="card result-card" id="guiCard">
+        <div class="card-title">
+          <h2>2. GUI Preview</h2>
+          <button class="result-focus-button" onclick="toggleResultFocus('guiCard', this)">Expand</button>
+        </div>
+        <div class="panel-body">
+          <div id="guiPreview" class="hint">Python browser GUI components will appear here.</div>
+        </div>
+      </section>
+
+      <section class="card result-card" id="plotsCard">
+        <div class="card-title">
+          <h2>3. Plots</h2>
+          <button class="result-focus-button" onclick="toggleResultFocus('plotsCard', this)">Expand</button>
+        </div>
+        <div class="panel-body">
+          <div id="plotArea" class="hint">Matplotlib plots will appear here when using Pyodide.</div>
+        </div>
+      </section>
+    </section>
+
+    <main class="workspace-grid">
+      <section class="card editor-card">
+        <div class="card-title">
+          <div class="editor-heading">
+            <h2>Python Workspace</h2>
+            <div class="workspace-tabs" role="tablist" aria-label="Choose a Python workspace">
+              <button
+                type="button"
+                id="editorTab"
+                class="workspace-tab active"
+                role="tab"
+                aria-selected="true"
+                aria-controls="scriptEditorPane"
+                onclick="switchWorkspace('editor')"
+              >Script Editor</button>
+              <button
+                type="button"
+                id="shellTab"
+                class="workspace-tab"
+                role="tab"
+                aria-selected="false"
+                aria-controls="pythonShellPane"
+                onclick="switchWorkspace('shell')"
+              >Python Shell</button>
+            </div>
+          </div>
+
+          <div class="editor-actions" id="scriptEditorActions">
+            <span class="keyboard-hint">Ctrl/Cmd + Enter = Run</span>
+            <button class="primary small-button" onclick="runPythonCode()">▶ Run</button>
+            <button class="secondary small-button" onclick="downloadPythonFile()">Save .py</button>
+          </div>
+
+          <div class="editor-actions" id="shellActions" hidden>
+            <span class="keyboard-hint">Enter = Run · Shift+Enter = New line</span>
+            <button class="secondary small-button" onclick="clearPythonShell()">Clear shell</button>
+            <button class="danger small-button" onclick="restartPythonShell()">Restart session</button>
+          </div>
+        </div>
+
+        <div class="editor-lock-notice" id="editorLockNotice">
+          Complete and lock Part A before using the Python workspace. Your prediction must be recorded before the first run.
+        </div>
+
+        <div class="editor-shell workspace-pane" id="scriptEditorPane" role="tabpanel" aria-labelledby="editorTab">
+          <div class="line-numbers" id="lineNumbers">1</div>
+          <div class="editor-layer">
+            <pre id="highlight"></pre>
+            <textarea id="editor" spellcheck="false" aria-label="Python code editor"></textarea>
+          </div>
+        </div>
+
+        <div class="python-shell workspace-pane" id="pythonShellPane" role="tabpanel" aria-labelledby="shellTab" hidden>
+          <pre class="shell-transcript" id="shellTranscript" aria-live="polite">GLM Python Shell
+Type one Python command at a time. Your variables and functions stay available during this session.
+
+</pre>
+          <div class="shell-composer">
+            <span class="shell-prompt" aria-hidden="true">&gt;&gt;&gt;</span>
+            <textarea
+              id="shellInput"
+              rows="1"
+              spellcheck="false"
+              autocomplete="off"
+              aria-label="Python Shell command"
+              placeholder="Example: total = 7 * 24 * 60"
+            ></textarea>
+            <button type="button" class="primary shell-run-button" id="shellRunButton" onclick="runShellCommand()">Run line</button>
+          </div>
+          <p class="shell-help">
+            <strong>Try:</strong> <code>2 + 2</code>, then <code>name = "Ana"</code>, then <code>print(name)</code>.
+            Use Shift+Enter to write a function, loop, or conditional on several lines.
+          </p>
+        </div>
+      </section>
+
+      <aside class="task-sidebar" data-sandbox-only>
+        <section class="card">
+          <div class="card-title">
+            <h2>Sandbox Starters</h2>
+          </div>
+          <div class="panel-body">
+            <div class="mini-grid">
+              <button class="secondary small-button" onclick="loadExample('basics')">Basic Python</button>
+              <button class="secondary small-button" onclick="loadExample('data')">Data + Plot</button>
+              <button class="secondary small-button" onclick="loadExample('gui')">Browser GUI</button>
+              <button class="danger small-button" onclick="clearEditor()">Blank Editor</button>
+            </div>
+            <p class="hint" style="margin-bottom:0;">Examples replace only the Sandbox editor. Your evidence code remains separate.</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-title">
+            <h2>How to Experiment</h2>
+          </div>
+          <div class="panel-body">
+            <ul class="sandbox-tip-list">
+              <li>Use <strong>Script Editor</strong> for complete programs.</li>
+              <li>Use <strong>Python Shell</strong> to test one line at a time.</li>
+              <li>Select Brython for quick fundamentals and browser GUIs.</li>
+              <li>Select Pyodide for numpy, pandas, matplotlib, and data work.</li>
+              <li>When ready, switch to Evidence Submission and follow Parts A–D.</li>
+            </ul>
+          </div>
+        </section>
+      </aside>
+
+      <aside class="task-sidebar" data-evidence-only>
+        <section class="card">
+          <div class="card-title">
+            <h2>Evidence Progress</h2>
+            <span class="pill" id="exerciseCounter">0%</span>
+          </div>
+          <div class="panel-body">
+            <div class="evidence-side-status">
+              <div class="evidence-progress-track" aria-label="Evidence completion">
+                <div class="evidence-progress-fill" id="evidenceProgressFill"></div>
+              </div>
+              <div class="side-step">
+                <span class="side-step-letter">A</span>
+                <span><strong>Predict</strong><small>Read before running</small></span>
+                <span class="step-state" id="sideStateA">Not complete</span>
+              </div>
+              <div class="side-step">
+                <span class="side-step-letter">B</span>
+                <span><strong>Run</strong><small>Two different tests</small></span>
+                <span class="step-state" id="sideStateB">Not complete</span>
+              </div>
+              <div class="side-step">
+                <span class="side-step-letter">C</span>
+                <span><strong>Debug</strong><small>Four fixes + one test</small></span>
+                <span class="step-state" id="sideStateC">Not complete</span>
+              </div>
+              <div class="side-step">
+                <span class="side-step-letter">D</span>
+                <span><strong>Explain</strong><small>Individual response</small></span>
+                <span class="step-state" id="sideStateD">Not complete</span>
+              </div>
+              <div class="evidence-rule"><strong>Collaboration:</strong> Partner discussion is allowed only while finding problems in Part C. Submit your own code, fix log, and explanation.</div>
+              <div class="evidence-rule"><strong>Submission:</strong> Save Draft does not submit the evidence. Use Submit Activity after every checklist item is complete.</div>
+              <div class="evidence-actions">
+                <button class="secondary small-button" onclick="showEvidencePart('A')">Open Part A</button>
+                <button class="secondary small-button" onclick="showEvidencePart('B')">Open Part B</button>
+                <button class="secondary small-button" onclick="showEvidencePart('C')">Open Part C</button>
+                <button class="secondary small-button" onclick="showEvidencePart('D')">Open Part D</button>
+              </div>
+            </div>
+            <div id="exerciseList" hidden></div>
+            <div id="exerciseDetails" hidden></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-title">
+            <h2>Week 2 Python File</h2>
+          </div>
+          <div class="panel-body">
+            <div class="evidence-rule" style="margin-bottom:10px;">
+              Save the working file using the required pattern: <strong>E1_Lastname_Firstname.py</strong>. Then reopen it here to confirm that it was saved.
+            </div>
+            <div class="mini-grid">
+              <button class="secondary small-button" onclick="loadProgram1IntoEditor()">Load Program 1</button>
+              <button class="secondary small-button" onclick="loadFaultyProgram2IntoEditor()">Load Program 2</button>
+              <button class="secondary small-button" onclick="downloadPythonFile()">Download .py</button>
+              <button class="secondary small-button" onclick="document.getElementById('pythonFileInput').click()">Open .py</button>
+            </div>
+            <p class="hint" id="sidebarFileStatus" style="margin-bottom:0;">The required file has not been reopened yet.</p>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <section class="card week2-evidence-card" id="week2EvidenceCard" data-evidence-only aria-labelledby="evidenceFormTitle">
+      <div class="card-title">
+        <div>
+          <h2 id="evidenceFormTitle">Week 2 Evidence Form</h2>
+          <p class="hint" style="margin:4px 0 0;">Your responses auto-save in this browser. Use Save Draft to store them in Google Sheets.</p>
+        </div>
+        <span class="pill" id="evidenceCompletionPill">0% complete</span>
+      </div>
+
+      <nav class="evidence-stepper" aria-label="Evidence parts">
+        <button type="button" class="evidence-step-button active" id="stepButtonA" onclick="showEvidencePart('A')">
+          <span class="evidence-step-letter">A</span>
+          <span><strong>Predict</strong><small>Read first</small></span>
+        </button>
+        <button type="button" class="evidence-step-button" id="stepButtonB" onclick="showEvidencePart('B')">
+          <span class="evidence-step-letter">B</span>
+          <span><strong>Run</strong><small>Test twice</small></span>
+        </button>
+        <button type="button" class="evidence-step-button" id="stepButtonC" onclick="showEvidencePart('C')">
+          <span class="evidence-step-letter">C</span>
+          <span><strong>Debug</strong><small>Fix + log</small></span>
+        </button>
+        <button type="button" class="evidence-step-button" id="stepButtonD" onclick="showEvidencePart('D')">
+          <span class="evidence-step-letter">D</span>
+          <span><strong>Explain</strong><small>Individual</small></span>
+        </button>
+      </nav>
+
+      <form id="week2EvidenceForm" onsubmit="return false;">
+        <section class="evidence-panel active" id="evidencePanelA" aria-labelledby="partATitle">
+          <div class="evidence-panel-header">
+            <div>
+              <h3 id="partATitle">A · Read before you run</h3>
+              <p>Complete your prediction before the Python workspace is unlocked.</p>
+            </div>
+            <span class="required-label">Required before run</span>
+          </div>
+
+          <h4>Program 1: Study Plan Selector</h4>
+          <pre class="evidence-code-block">name = input("What is your name? ")
+minutes = int(input("How many minutes can you study? "))
+
+if minutes &gt;= 30:
+    plan = "Complete the full practice"
+else:
+    plan = "Complete the essential questions"
+
+print(name + ", your plan is: " + plan)</pre>
+
+          <div class="evidence-question">
+            <label for="eA1Variables">A1. List the variables. What value does each variable store?</label>
+            <textarea id="eA1Variables" placeholder="Name each variable and describe the value it stores."></textarea>
+          </div>
+
+          <div class="evidence-question">
+            <span class="question-label">A2. Identify the program's input, processing, and output.</span>
+            <div class="ipo-grid">
+              <div class="ipo-field">
+                <label for="eA2Input">Input</label>
+                <textarea id="eA2Input" placeholder="Evidence from Program 1"></textarea>
+              </div>
+              <div class="ipo-field">
+                <label for="eA2Processing">Processing</label>
+                <textarea id="eA2Processing" placeholder="Evidence from Program 1"></textarea>
+              </div>
+              <div class="ipo-field">
+                <label for="eA2Output">Output</label>
+                <textarea id="eA2Output" placeholder="Evidence from Program 1"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="evidence-question">
+            <label for="eA3Prediction">A3. Predict the output when the user enters "Alex" and 20. Explain why.</label>
+            <textarea id="eA3Prediction" placeholder="Write the exact output you predict and explain the condition that produces it."></textarea>
+          </div>
+
+          <div class="evidence-question">
+            <label for="eA4Change">A4. What changes when the user enters 45 instead of 20?</label>
+            <textarea id="eA4Change" placeholder="Describe what changes and connect it to the condition."></textarea>
+          </div>
+
+          <div class="evidence-callout">Once you lock Part A, your prediction becomes read-only so the app can preserve evidence that it was written before running.</div>
+          <div class="evidence-actions">
+            <button type="button" class="success-button" id="lockPredictionButton" onclick="lockPredictionAndOpenLab()">Lock Part A & Open Python Lab</button>
+          </div>
+          <div class="evidence-nav">
+            <span class="hint">Step 1 of 4</span>
+            <button type="button" class="primary" onclick="showEvidencePart('B')">Next: Run →</button>
+          </div>
+        </section>
+
+        <section class="evidence-panel" id="evidencePanelB" aria-labelledby="partBTitle">
+          <div class="evidence-panel-header">
+            <div>
+              <h3 id="partBTitle">B · Run and record</h3>
+              <p>Use the GLM Python Lab as your coding environment and record two different tests.</p>
+            </div>
+            <span class="required-label">Two runs required</span>
+          </div>
+
+          <div class="evidence-callout"><strong>Important:</strong> Use the Script Editor for recorded runs. The Python Shell is available for exploration, but shell commands are not counted as evidence runs.</div>
+
+          <div class="file-evidence-grid">
+            <div>
+              <label for="eFileName">Required Python filename</label>
+              <input type="text" id="eFileName" value="E1_Lastname_Firstname.py" autocomplete="off">
+            </div>
+            <button type="button" class="secondary" onclick="downloadPythonFile()">Download .py</button>
+            <button type="button" class="secondary" onclick="document.getElementById('pythonFileInput').click()">Reopen .py</button>
+          </div>
+          <div class="file-confirmation" id="fileConfirmationStatus">Not confirmed: download the file and reopen it in this app.</div>
+
+          <div class="evidence-actions" style="margin-top:14px;">
+            <button type="button" class="secondary" onclick="loadProgram1IntoEditor()">Load Program 1 in Editor</button>
+          </div>
+
+          <div class="run-record-grid">
+            <article class="run-record">
+              <h4>Program 1 · Run 1</h4>
+              <button type="button" class="primary small-button" onclick="runAndRecordEvidence('program1', 0)">Run & Record Test 1</button>
+              <label for="eRun1Inputs">Inputs used</label>
+              <textarea id="eRun1Inputs" readonly placeholder="The app records the name and minutes."></textarea>
+              <label for="eRun1Output">Exact output shown</label>
+              <textarea id="eRun1Output" readonly placeholder="The Output box is copied here."></textarea>
+            </article>
+            <article class="run-record">
+              <h4>Program 1 · Run 2</h4>
+              <button type="button" class="primary small-button" onclick="runAndRecordEvidence('program1', 1)">Run & Record Test 2</button>
+              <label for="eRun2Inputs">Inputs used</label>
+              <textarea id="eRun2Inputs" readonly placeholder="Use a different set of inputs."></textarea>
+              <label for="eRun2Output">Exact output shown</label>
+              <textarea id="eRun2Output" readonly placeholder="The Output box is copied here."></textarea>
+            </article>
+          </div>
+
+          <div class="evidence-callout green">Use Save Draft before moving to Part C. A draft is not a final submission; you can return while Week 2 remains available.</div>
+          <div class="evidence-nav">
+            <button type="button" class="secondary" onclick="showEvidencePart('A')">← Back: Predict</button>
+            <button type="button" class="primary" onclick="showEvidencePart('C')">Next: Debug →</button>
+          </div>
+        </section>
+
+        <section class="evidence-panel" id="evidencePanelC" aria-labelledby="partCTitle">
+          <div class="evidence-panel-header">
+            <div>
+              <h3 id="partCTitle">C · Debug and explain the fixes</h3>
+              <p>Partner discussion is allowed for finding problems; each student submits their own corrected code and fix log.</p>
+            </div>
+            <span class="required-label">Four fixes required</span>
+          </div>
+
+          <p>Program 2 contains syntax, data-type, naming, and logic problems.</p>
+          <h4>Program 2: Faulty Recommendation</h4>
+          <pre class="evidence-code-block">name = input("Name: ")
+minutes = input("Minutes available: ")
+
+if minutes &lt; 30:
+    message = "Complete the full practice"
+else:
+    mesage = "Complete the short practice"
+
+print(name + ": " + message)</pre>
+
+          <div class="evidence-actions">
+            <button type="button" class="secondary" onclick="loadFaultyProgram2IntoEditor()">Load Faulty Program 2</button>
+            <button type="button" class="secondary" onclick="captureCorrectedCodeFromEditor()">Use Current Editor Code as C2</button>
+            <button type="button" class="secondary" onclick="loadCorrectedCodeIntoEditor()">Load C2 into Editor</button>
+          </div>
+
+          <div class="evidence-question">
+            <span class="question-label">C1. Identify four problems. For each one, record the correction and explain why it is needed.</span>
+            <div class="fix-log">
+              <div class="fix-row"><span class="fix-number">1</span><textarea id="eFix1Problem" placeholder="Problem found"></textarea><textarea id="eFix1Reason" placeholder="Correction and reason"></textarea></div>
+              <div class="fix-row"><span class="fix-number">2</span><textarea id="eFix2Problem" placeholder="Problem found"></textarea><textarea id="eFix2Reason" placeholder="Correction and reason"></textarea></div>
+              <div class="fix-row"><span class="fix-number">3</span><textarea id="eFix3Problem" placeholder="Problem found"></textarea><textarea id="eFix3Reason" placeholder="Correction and reason"></textarea></div>
+              <div class="fix-row"><span class="fix-number">4</span><textarea id="eFix4Problem" placeholder="Problem found"></textarea><textarea id="eFix4Reason" placeholder="Correction and reason"></textarea></div>
+            </div>
+          </div>
+
+          <div class="evidence-question">
+            <label for="eC2CorrectedCode">C2. Paste your corrected Program 2. Keep meaningful variable names and correct indentation.</label>
+            <textarea id="eC2CorrectedCode" class="code-response" spellcheck="false" placeholder="Paste or transfer your corrected Python code here."></textarea>
+          </div>
+
+          <div class="evidence-question">
+            <span class="question-label">C3. Test the corrected program. Record one set of inputs and the exact output.</span>
+            <div class="evidence-actions" style="margin-bottom:10px;">
+              <button type="button" class="primary" onclick="runAndRecordEvidence('program2', 0)">Run & Record Corrected Program 2</button>
+            </div>
+            <div class="run-record-grid" style="grid-template-columns:1fr;">
+              <article class="run-record">
+                <label for="eC3Inputs">Inputs used</label>
+                <textarea id="eC3Inputs" readonly placeholder="The app records the name and minutes."></textarea>
+                <label for="eC3Output">Exact output shown</label>
+                <textarea id="eC3Output" readonly placeholder="The Output box is copied here."></textarea>
+              </article>
+            </div>
+          </div>
+
+          <div class="evidence-nav">
+            <button type="button" class="secondary" onclick="showEvidencePart('B')">← Back: Run</button>
+            <button type="button" class="primary" onclick="showEvidencePart('D')">Next: Explain →</button>
+          </div>
+        </section>
+
+        <section class="evidence-panel" id="evidencePanelD" aria-labelledby="partDTitle">
+          <div class="evidence-panel-header">
+            <div>
+              <h3 id="partDTitle">D · Individual explanation</h3>
+              <p>Write this section independently, even if you discussed Part C with a partner.</p>
+            </div>
+            <span class="required-label">Individual work</span>
+          </div>
+
+          <div class="evidence-question">
+            <label for="eD1Explanation">D1. Explain how the corrected program follows input → processing → output. Name the control structure and explain how it changes the program's behavior.</label>
+            <textarea id="eD1Explanation" style="min-height:150px;" placeholder="Use the actual variable names, condition, and outputs from your corrected program."></textarea>
+          </div>
+
+          <div class="evidence-question">
+            <span class="question-label">D2. Which debugging step helped you most? Select one, then explain with specific evidence from your work.</span>
+            <div class="debug-choice-grid">
+              <label class="debug-choice"><input type="radio" name="debugStep" value="Read the error message">Read the error message</label>
+              <label class="debug-choice"><input type="radio" name="debugStep" value="Test a value">Test a value</label>
+              <label class="debug-choice"><input type="radio" name="debugStep" value="Compare variable names">Compare variable names</label>
+              <label class="debug-choice"><input type="radio" name="debugStep" value="Check intended logic">Check intended logic</label>
+            </div>
+          </div>
+
+          <div class="evidence-question">
+            <label for="eD2Explanation">Explain why this step helped.</label>
+            <textarea id="eD2Explanation" placeholder="Use specific evidence from your debugging work."></textarea>
+          </div>
+
+          <label class="integrity-check">
+            <input type="checkbox" id="eIntegrityConfirmed">
+            <span>I confirm that Part D is my own individual work and that my submitted code, fix log, and explanations represent my evidence.</span>
+          </label>
+
+          <div class="final-checklist" aria-label="Final submission checklist">
+            <div class="final-check-item" id="finalCheck1"><span>○</span><span>Parts A–D are complete; A3 was written before running Program 1.</span></div>
+            <div class="final-check-item" id="finalCheck2"><span>○</span><span>Two Program 1 test runs and one corrected Program 2 test are recorded.</span></div>
+            <div class="final-check-item" id="finalCheck3"><span>○</span><span>The corrected Program 2 code is recorded in Part C.</span></div>
+            <div class="final-check-item" id="finalCheck4"><span>○</span><span>The file E1_Lastname_Firstname.py was downloaded and reopened.</span></div>
+            <div class="final-check-item" id="finalCheck5"><span>○</span><span>The Part D explanation is confirmed as individual work.</span></div>
+          </div>
+
+          <div class="evidence-callout green"><strong>No separate worksheet upload is required:</strong> the completed fields in this web app are the evidence submission.</div>
+
+          <div class="evidence-nav">
+            <button type="button" class="secondary" onclick="showEvidencePart('C')">← Back: Debug</button>
+            <button type="button" class="success-button" onclick="submitWeek2Evidence()">Submit Activity</button>
+          </div>
+        </section>
+      </form>
+
+      <div class="evidence-save-bar">
+        <p><strong>Save Draft</strong> stores your current work. <strong>Submit Activity</strong> is available only when the evidence checklist is complete.</p>
+        <div class="evidence-actions">
+          <button type="button" class="secondary" onclick="saveWeek2Draft()">Save Draft</button>
+          <button type="button" class="success-button" id="submitEvidenceButton" onclick="submitWeek2Evidence()">Submit Activity</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-area" aria-label="Additional Python Lab controls">
+      <details class="settings-card">
+        <summary>Runtime & Engine</summary>
+        <div class="panel-body">
+          <select id="engineSelect" class="engine-select" onchange="changeEngine()">
+            <option value="brython">Brython — fast basic Python and browser GUI</option>
+            <option value="pyodide">Pyodide — libraries, data, plots, CSV analysis</option>
+          </select>
+          <div id="engineHelp" class="engine-help hint"></div>
+          <div class="hint" id="runtimeInfo">Brython starts first. Pyodide loads only when selected or needed.</div>
+        </div>
+      </details>
+
+      <details class="settings-card">
+        <summary>Libraries</summary>
+        <div class="panel-body">
+          <div id="librariesPanel">
+            <div class="library-grid">
+              <label><input type="checkbox" value="numpy" checked>numpy</label>
+              <label><input type="checkbox" value="pandas" checked>pandas</label>
+              <label><input type="checkbox" value="matplotlib" checked>matplotlib</label>
+              <label><input type="checkbox" value="scipy">scipy</label>
+              <label><input type="checkbox" value="sympy">sympy</label>
+              <label><input type="checkbox" value="scikit-learn">scikit-learn</label>
+              <label><input type="checkbox" value="pillow">pillow</label>
+              <label><input type="checkbox" value="networkx">networkx</label>
+              <label><input type="checkbox" value="micropip">micropip</label>
+              <label><input type="checkbox" value="sqlite3">sqlite3</label>
+            </div>
+            <input class="package-input" id="extraPackages" placeholder="Extra packages, separated by commas. Example: plotly, snowballstemmer">
+            <button class="success-button" id="loadLibrariesButton" onclick="loadSelectedPackages(event)">Load Selected Libraries</button>
+          </div>
+          <p class="hint" id="libraryHint">Libraries are available with Pyodide. Brython is better for basic Python and web interaction.</p>
+        </div>
+      </details>
+
+      <details class="settings-card" data-evidence-only>
+        <summary>Evidence Save Status</summary>
+        <div class="panel-body">
+          <select id="manualStatus" hidden><option value="In progress">In progress</option></select>
+          <textarea id="studentReflection" hidden></textarea>
+          <div class="progress-box" id="saveStatusBox">No progress saved in this session yet.</div>
+          <p class="hint" style="margin-bottom:0;">A local browser copy updates automatically. Use Save Draft to create a Google Sheets record.</p>
+        </div>
+      </details>
+    </section>
+
+    <p class="settings-note" id="modeWorkflowNote">Sandbox workflow: write or open code → run → inspect Output, GUI, or Plots → revise.</p>
+  </div>
+
+
+  <script>
+    const editor = document.getElementById('editor');
+    const highlight = document.getElementById('highlight');
+    const lineNumbers = document.getElementById('lineNumbers');
+    const outputBox = document.getElementById('output');
+    const plotArea = document.getElementById('plotArea');
+    const guiPreview = document.getElementById('guiPreview');
+    const engineSelect = document.getElementById('engineSelect');
+    const enginePill = document.getElementById('enginePill');
+    const engineHelp = document.getElementById('engineHelp');
+    const librariesPanel = document.getElementById('librariesPanel');
+    const loadLibrariesButton = document.getElementById('loadLibrariesButton');
+    const libraryHint = document.getElementById('libraryHint');
+    const scriptEditorPane = document.getElementById('scriptEditorPane');
+    const pythonShellPane = document.getElementById('pythonShellPane');
+    const scriptEditorActions = document.getElementById('scriptEditorActions');
+    const shellActions = document.getElementById('shellActions');
+    const editorTab = document.getElementById('editorTab');
+    const shellTab = document.getElementById('shellTab');
+    const shellTranscript = document.getElementById('shellTranscript');
+    const shellInput = document.getElementById('shellInput');
+    const shellRunButton = document.getElementById('shellRunButton');
+
+    const studentNameInput = document.getElementById('studentName');
+    const studentEmailInput = document.getElementById('studentEmail');
+    const studentSectionInput = document.getElementById('studentSection');
+    const profilePill = document.getElementById('profilePill');
+    const exerciseList = document.getElementById('exerciseList');
+    const exerciseDetails = document.getElementById('exerciseDetails');
+    const exerciseCounter = document.getElementById('exerciseCounter');
+    const manualStatus = document.getElementById('manualStatus');
+    const studentReflection = document.getElementById('studentReflection');
+    const saveStatusBox = document.getElementById('saveStatusBox');
+    const week2EvidenceForm = document.getElementById('week2EvidenceForm');
+    const editorLockNotice = document.getElementById('editorLockNotice');
+    const evidenceProgressFill = document.getElementById('evidenceProgressFill');
+    const evidenceCompletionPill = document.getElementById('evidenceCompletionPill');
+    const submissionStatusBadge = document.getElementById('submissionStatusBadge');
+    const submitEvidenceButton = document.getElementById('submitEvidenceButton');
+    const submissionConfirmationPanel = document.getElementById('submissionConfirmationPanel');
+    const submissionConfirmationTitle = document.getElementById('submissionConfirmationTitle');
+    const submissionConfirmationText = document.getElementById('submissionConfirmationText');
+    const sandboxModeButton = document.getElementById('sandboxModeButton');
+    const evidenceModeButton = document.getElementById('evidenceModeButton');
+    const labModeDescription = document.getElementById('labModeDescription');
+    const headerModeSubtitle = document.getElementById('headerModeSubtitle');
+    const modeHeroTitle = document.getElementById('week2Title');
+    const modeHeroText = document.getElementById('modeHeroText');
+    const resultsModeText = document.getElementById('resultsModeText');
+    const modeWorkflowNote = document.getElementById('modeWorkflowNote');
+
+    let pyodide = null;
+    let pyodideReady = false;
+    let brythonReady = false;
+    let pyodideShellGlobals = null;
+    let shellCaptureActive = false;
+    let shellHistory = [];
+    let shellHistoryIndex = 0;
+    let activeWorkspace = localStorage.getItem('pythonLabWorkspace') === 'shell'
+      ? 'shell'
+      : 'editor';
+    let activeLabMode = localStorage.getItem('glmPythonLabMode') === 'evidence'
+      ? 'evidence'
+      : 'sandbox';
+
+    let activeExerciseId = 'G9W02_E1_READ_RUN_EXPLAIN';
+    let currentAutoInputs = [];
+    let activeEvidenceCapture = null;
+    let activeInputLog = [];
+    let evidenceAutoSaveTimer = null;
+    let currentEvidencePart = 'A';
+    let lastRun = {
+      ok: null,
+      status: 'Not run',
+      output: '',
+      engine: '',
+      at: ''
+    };
+    let localProgress = JSON.parse(localStorage.getItem('pythonLabProgress') || '{}');
+
+    const WEEK2_ACTIVITY = {
+      week: 2,
+      id: 'G9W02_E1_READ_RUN_EXPLAIN',
+      title: 'Learning Evidence 1 — Read, Run, Explain',
+      category: 'Learning Evidence',
+      pointsPossible: 100,
+      program1: `name = input("What is your name? ")
+minutes = int(input("How many minutes can you study? "))
+
+if minutes >= 30:
+    plan = "Complete the full practice"
+else:
+    plan = "Complete the essential questions"
+
+print(name + ", your plan is: " + plan)`,
+      program2Faulty: `name = input("Name: ")
+minutes = input("Minutes available: ")
+
+if minutes < 30:
+    message = "Complete the full practice"
+else:
+    mesage = "Complete the short practice"
+
+print(name + ": " + message)`
+    };
+
+    let week2Evidence = loadWeek2EvidenceLocal();
+
+    const learningPath = [
+      {
+        id: WEEK2_ACTIVITY.id,
+        chapter: 2,
+        level: 'Week 2',
+        topic: WEEK2_ACTIVITY.category,
+        title: WEEK2_ACTIVITY.title,
+        objective: 'Predict, test, debug, and explain Python code using evidence from actual runs.',
+        instructions: 'Complete Parts A–D in order. Part A must be locked before the first recorded run.',
+        engine: 'brython',
+        starter: WEEK2_ACTIVITY.program1,
+        testInputs: [],
+        expectedContains: [],
+        requiredCode: []
+      }
+    ];
+
+    const examples = {
+      basics: `name = input("What is your name? ")
+age = int(input("How old are you? "))
+
+print("Hello,", name)
+print("Next year you will be", age + 1)
+
+if age >= 18:
+    print("Adult")
+else:
+    print("Minor")`,
+
+      data: `import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+scores = np.array([3.2, 4.1, 3.8, 4.6, 2.9, 5.0])
+df = pd.DataFrame({
+    "student": ["A", "B", "C", "D", "E", "F"],
+    "score": scores
+})
+
+print(df)
+print()
+print("Average:", scores.mean())
+print("Highest:", scores.max())
+
+plt.figure()
+plt.bar(df["student"], df["score"])
+plt.title("Student Scores")
+plt.xlabel("Student")
+plt.ylabel("Score")
+plt.show()`,
+
+      gui: `import gui
+
+gui.clear()
+gui.title("Simple Python GUI")
+gui.text("This interface was created from Python code.")
+gui.input("nameBox", "Write your name")
+
+def greet():
+    name = gui.value("nameBox")
+    gui.text("Hello, " + name + "!")
+
+gui.button("Greet", greet)
+gui.button("Clear GUI", gui.clear)
+
+print("The GUI is ready.")`
+    };
+
+    function saveActiveModeWorkspace() {
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxCode', editor.value || '');
+        localStorage.setItem('glmPythonSandboxOutput', outputBox.textContent || 'No output yet.');
+        return;
+      }
+
+      week2Evidence.editorCode = editor.value || '';
+      week2Evidence.lastOutput = outputBox.textContent || 'No output yet.';
+      saveWeek2EvidenceLocal();
+    }
+
+    function loadActiveModeWorkspace() {
+      if (activeLabMode === 'sandbox') {
+        editor.value = localStorage.getItem('glmPythonSandboxCode') ||
+          localStorage.getItem('pythonIdeCode') || '';
+        outputBox.textContent = localStorage.getItem('glmPythonSandboxOutput') || 'No output yet.';
+      } else {
+        editor.value = week2Evidence.editorCode || '';
+        outputBox.textContent = week2Evidence.lastOutput || 'No output yet.';
+      }
+
+      plotArea.innerHTML = 'Matplotlib plots will appear here when using Pyodide.';
+      plotArea.className = 'hint';
+      guiPreview.innerHTML = 'Python browser GUI components will appear here.';
+      guiPreview.className = 'hint';
+      updateEditor();
+    }
+
+    function resetShellForMode() {
+      if (brythonReady && window.resetBrythonShell) {
+        window.resetBrythonShell();
+      }
+      if (pyodideShellGlobals && pyodideShellGlobals.destroy) {
+        pyodideShellGlobals.destroy();
+      }
+      pyodideShellGlobals = null;
+      shellHistory = [];
+      shellHistoryIndex = 0;
+      shellInput.value = '';
+      shellTranscript.textContent =
+        'GLM Python Shell\n' +
+        (activeLabMode === 'sandbox'
+          ? 'Sandbox session. Try one Python command at a time.\n\n'
+          : 'Evidence session. Commands remain separate from the Sandbox.\n\n');
+    }
+
+    function switchLabMode(mode, remember, saveCurrent) {
+      const nextMode = mode === 'evidence' ? 'evidence' : 'sandbox';
+      const changingMode = nextMode !== activeLabMode;
+
+      if (saveCurrent !== false) {
+        saveActiveModeWorkspace();
+      }
+
+      activeLabMode = nextMode;
+      document.body.classList.toggle('sandbox-mode', activeLabMode === 'sandbox');
+      document.body.classList.toggle('evidence-mode', activeLabMode === 'evidence');
+      sandboxModeButton.classList.toggle('active', activeLabMode === 'sandbox');
+      evidenceModeButton.classList.toggle('active', activeLabMode === 'evidence');
+      sandboxModeButton.setAttribute('aria-pressed', String(activeLabMode === 'sandbox'));
+      evidenceModeButton.setAttribute('aria-pressed', String(activeLabMode === 'evidence'));
+
+      if (activeLabMode === 'sandbox') {
+        headerModeSubtitle.textContent = 'Practice Sandbox · Try Python safely';
+        modeHeroTitle.textContent = 'Practice Sandbox';
+        modeHeroText.textContent =
+          'Use the Script Editor or Python Shell to test ideas, make mistakes, and run code without affecting your evidence submission.';
+        resultsModeText.textContent = 'Sandbox output is for practice and is not included in an evidence submission.';
+        labModeDescription.textContent =
+          'Sandbox work stays in this browser and is kept separate from submitted evidence.';
+        modeWorkflowNote.textContent =
+          'Sandbox workflow: write or open code → run → inspect Output, GUI, or Plots → revise.';
+      } else {
+        headerModeSubtitle.textContent = 'Week 2 · Learning Evidence 1 · Read, Run, Explain';
+        modeHeroTitle.textContent = 'Learning Evidence 1 — Read, Run, Explain';
+        modeHeroText.textContent =
+          'Complete Parts A–D. Predict before running, record two Program 1 tests, debug Program 2, and finish with your own individual explanation.';
+        resultsModeText.textContent =
+          'The Output box is recorded as evidence when you use a Run & Record button.';
+        labModeDescription.textContent =
+          'Evidence work is tracked in Google Sheets. Final submission sends confirmation and permanently locks editing.';
+        modeWorkflowNote.textContent =
+          'Week 2 workflow: Predict → lock Part A → run twice → debug → explain independently → submit.';
+      }
+
+      if (changingMode) {
+        resetShellForMode();
+      }
+      loadActiveModeWorkspace();
+
+      if (activeLabMode === 'evidence' && !week2Evidence.predictionLocked) {
+        activeWorkspace = 'editor';
+      }
+      switchWorkspace(activeWorkspace, false);
+      updateWorkspaceLockState();
+      updateFinalSubmissionState();
+
+      if (remember !== false) {
+        localStorage.setItem('glmPythonLabMode', activeLabMode);
+      }
+
+      setStatus(
+        'neutral',
+        activeLabMode === 'sandbox'
+          ? 'Practice Sandbox ready. Nothing here will be submitted.'
+          : week2Evidence.status === 'Submitted'
+            ? 'Submitted evidence loaded in read-only mode.'
+            : 'Evidence Submission mode ready.'
+      );
+    }
+
+    window.addEventListener('load', function () {
+      loadBrandLogo();
+      setupBrowserGuiBridge();
+      setupLearningPath();
+      loadStudentProfile();
+
+      editor.value = '';
+      engineSelect.value = 'brython';
+
+      updateEditor();
+      changeEngine();
+      startBrythonRuntime();
+      if (!week2Evidence.predictionLocked) {
+        activeWorkspace = 'editor';
+      }
+      switchWorkspace(activeWorkspace, false);
+      applyWeek2EvidenceToForm();
+      setupWeek2EvidenceListeners();
+      showEvidencePart(week2Evidence.currentPart || 'A', false);
+      updateWeek2EvidenceUI();
+      switchLabMode(activeLabMode, false, false);
+
+      const profile = validateStudentProfile();
+      if (profile.ok && typeof google !== 'undefined' && google.script && google.script.run) {
+        loadWeek2Evidence();
+      }
+    });
+
+    editor.addEventListener('input', function () {
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxCode', editor.value);
+      } else {
+        week2Evidence.editorCode = editor.value;
+        saveWeek2EvidenceLocal();
+      }
+      updateEditor();
+    });
+
+    editor.addEventListener('scroll', syncScroll);
+
+
+    editor.addEventListener('keydown', function (event) {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        runPythonCode();
+      }
+    });
+
+    editor.addEventListener('keydown', function (event) {
+      if (event.key === 'Tab') {
+        event.preventDefault();
+
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+
+        this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = start + 4;
+
+        if (activeLabMode === 'sandbox') {
+          localStorage.setItem('glmPythonSandboxCode', editor.value);
+        } else {
+          week2Evidence.editorCode = editor.value;
+          saveWeek2EvidenceLocal();
+        }
+        updateEditor();
+      }
+    });
+
+    shellInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        runShellCommand();
+        return;
+      }
+
+      if (event.key === 'ArrowUp' && !shellInput.value.includes('\n')) {
+        event.preventDefault();
+        moveShellHistory(-1);
+        return;
+      }
+
+      if (event.key === 'ArrowDown' && !shellInput.value.includes('\n')) {
+        event.preventDefault();
+        moveShellHistory(1);
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        const start = shellInput.selectionStart;
+        const end = shellInput.selectionEnd;
+        shellInput.value = shellInput.value.substring(0, start) + '    ' + shellInput.value.substring(end);
+        shellInput.selectionStart = shellInput.selectionEnd = start + 4;
+      }
+    });
+
+    function createEmptyWeek2Evidence() {
+      return {
+        activityId: WEEK2_ACTIVITY ? WEEK2_ACTIVITY.id : 'G9W02_E1_READ_RUN_EXPLAIN',
+        status: 'Not started',
+        savedAt: '',
+        emailSent: null,
+        emailStatus: '',
+        currentPart: 'A',
+        predictionLocked: false,
+        predictionLockedAt: '',
+        a: {
+          variables: '',
+          ipoInput: '',
+          ipoProcessing: '',
+          ipoOutput: '',
+          prediction: '',
+          change: ''
+        },
+        b: {
+          fileName: 'E1_Lastname_Firstname.py',
+          fileDownloaded: false,
+          fileReopened: false,
+          reopenedFileName: '',
+          run1Inputs: '',
+          run1Output: '',
+          run2Inputs: '',
+          run2Output: ''
+        },
+        c: {
+          fixLog: [
+            { problem: '', reason: '' },
+            { problem: '', reason: '' },
+            { problem: '', reason: '' },
+            { problem: '', reason: '' }
+          ],
+          correctedCode: '',
+          testInputs: '',
+          testOutput: ''
+        },
+        d: {
+          explanation: '',
+          debugStep: '',
+          debugExplanation: '',
+          integrityConfirmed: false
+        },
+        editorCode: '',
+        lastOutput: ''
+      };
+    }
+
+    function normalizeWeek2Evidence(raw) {
+      const base = createEmptyWeek2Evidence();
+      const source = raw && typeof raw === 'object' ? raw : {};
+      const fixLog = source.c && Array.isArray(source.c.fixLog)
+        ? source.c.fixLog.slice(0, 4)
+        : [];
+
+      while (fixLog.length < 4) {
+        fixLog.push({ problem: '', reason: '' });
+      }
+
+      return {
+        ...base,
+        ...source,
+        a: { ...base.a, ...(source.a || {}) },
+        b: { ...base.b, ...(source.b || {}) },
+        c: {
+          ...base.c,
+          ...(source.c || {}),
+          fixLog: fixLog.map(function (item) {
+            return {
+              problem: String(item && item.problem || ''),
+              reason: String(item && item.reason || '')
+            };
+          })
+        },
+        d: { ...base.d, ...(source.d || {}) }
+      };
+    }
+
+    function loadWeek2EvidenceLocal() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('glmWeek2Evidence1') || 'null');
+        return normalizeWeek2Evidence(saved);
+      } catch (error) {
+        return normalizeWeek2Evidence(null);
+      }
+    }
+
+    function saveWeek2EvidenceLocal() {
+      week2Evidence.currentPart = currentEvidencePart;
+      if (activeLabMode === 'evidence') {
+        week2Evidence.editorCode = editor ? editor.value : week2Evidence.editorCode;
+        week2Evidence.lastOutput = outputBox ? outputBox.textContent : week2Evidence.lastOutput;
+      }
+      localStorage.setItem('glmWeek2Evidence1', JSON.stringify(week2Evidence));
+    }
+
+    function setFieldValue(id, value) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.value = value === undefined || value === null ? '' : String(value);
+      }
+    }
+
+    function getFieldValue(id) {
+      const element = document.getElementById(id);
+      return element ? element.value.trim() : '';
+    }
+
+    function applyWeek2EvidenceToForm() {
+      week2Evidence = normalizeWeek2Evidence(week2Evidence);
+
+      setFieldValue('eA1Variables', week2Evidence.a.variables);
+      setFieldValue('eA2Input', week2Evidence.a.ipoInput);
+      setFieldValue('eA2Processing', week2Evidence.a.ipoProcessing);
+      setFieldValue('eA2Output', week2Evidence.a.ipoOutput);
+      setFieldValue('eA3Prediction', week2Evidence.a.prediction);
+      setFieldValue('eA4Change', week2Evidence.a.change);
+      setFieldValue('eFileName', week2Evidence.b.fileName);
+      setFieldValue('eRun1Inputs', week2Evidence.b.run1Inputs);
+      setFieldValue('eRun1Output', week2Evidence.b.run1Output);
+      setFieldValue('eRun2Inputs', week2Evidence.b.run2Inputs);
+      setFieldValue('eRun2Output', week2Evidence.b.run2Output);
+
+      week2Evidence.c.fixLog.forEach(function (item, index) {
+        setFieldValue('eFix' + (index + 1) + 'Problem', item.problem);
+        setFieldValue('eFix' + (index + 1) + 'Reason', item.reason);
+      });
+
+      setFieldValue('eC2CorrectedCode', week2Evidence.c.correctedCode);
+      setFieldValue('eC3Inputs', week2Evidence.c.testInputs);
+      setFieldValue('eC3Output', week2Evidence.c.testOutput);
+      setFieldValue('eD1Explanation', week2Evidence.d.explanation);
+      setFieldValue('eD2Explanation', week2Evidence.d.debugExplanation);
+
+      document.querySelectorAll('input[name="debugStep"]').forEach(function (radio) {
+        radio.checked = radio.value === week2Evidence.d.debugStep;
+      });
+      document.getElementById('eIntegrityConfirmed').checked = Boolean(week2Evidence.d.integrityConfirmed);
+
+      if (activeLabMode === 'evidence' && week2Evidence.editorCode) {
+        editor.value = week2Evidence.editorCode;
+        updateEditor();
+      }
+
+      if (activeLabMode === 'evidence' && week2Evidence.lastOutput) {
+        outputBox.textContent = week2Evidence.lastOutput;
+      }
+    }
+
+    function collectWeek2EvidenceFromForm() {
+      week2Evidence.a.variables = getFieldValue('eA1Variables');
+      week2Evidence.a.ipoInput = getFieldValue('eA2Input');
+      week2Evidence.a.ipoProcessing = getFieldValue('eA2Processing');
+      week2Evidence.a.ipoOutput = getFieldValue('eA2Output');
+      week2Evidence.a.prediction = getFieldValue('eA3Prediction');
+      week2Evidence.a.change = getFieldValue('eA4Change');
+      week2Evidence.b.fileName = getFieldValue('eFileName') || 'E1_Lastname_Firstname.py';
+      week2Evidence.b.run1Inputs = getFieldValue('eRun1Inputs');
+      week2Evidence.b.run1Output = getFieldValue('eRun1Output');
+      week2Evidence.b.run2Inputs = getFieldValue('eRun2Inputs');
+      week2Evidence.b.run2Output = getFieldValue('eRun2Output');
+      week2Evidence.c.fixLog = [1, 2, 3, 4].map(function (number) {
+        return {
+          problem: getFieldValue('eFix' + number + 'Problem'),
+          reason: getFieldValue('eFix' + number + 'Reason')
+        };
+      });
+      week2Evidence.c.correctedCode = getFieldValue('eC2CorrectedCode');
+      week2Evidence.c.testInputs = getFieldValue('eC3Inputs');
+      week2Evidence.c.testOutput = getFieldValue('eC3Output');
+      week2Evidence.d.explanation = getFieldValue('eD1Explanation');
+      week2Evidence.d.debugExplanation = getFieldValue('eD2Explanation');
+      const selectedStep = document.querySelector('input[name="debugStep"]:checked');
+      week2Evidence.d.debugStep = selectedStep ? selectedStep.value : '';
+      week2Evidence.d.integrityConfirmed = document.getElementById('eIntegrityConfirmed').checked;
+      if (activeLabMode === 'evidence') {
+        week2Evidence.editorCode = editor.value;
+        week2Evidence.lastOutput = outputBox.textContent;
+      }
+      return week2Evidence;
+    }
+
+    function setupWeek2EvidenceListeners() {
+      document.getElementById('eFileName').addEventListener('input', function () {
+        const nextName = this.value.trim();
+        if (nextName !== week2Evidence.b.fileName) {
+          week2Evidence.b.fileDownloaded = false;
+          week2Evidence.b.fileReopened = false;
+          week2Evidence.b.reopenedFileName = '';
+        }
+      });
+
+      document.getElementById('eC2CorrectedCode').addEventListener('input', function () {
+        if (this.value.trim() !== week2Evidence.c.correctedCode.trim()) {
+          week2Evidence.c.testInputs = '';
+          week2Evidence.c.testOutput = '';
+          setFieldValue('eC3Inputs', '');
+          setFieldValue('eC3Output', '');
+        }
+      });
+
+      week2EvidenceForm.addEventListener('input', function () {
+        window.clearTimeout(evidenceAutoSaveTimer);
+        evidenceAutoSaveTimer = window.setTimeout(function () {
+          collectWeek2EvidenceFromForm();
+          saveWeek2EvidenceLocal();
+          updateWeek2EvidenceUI();
+        }, 300);
+      });
+    }
+
+    function showEvidencePart(part, scrollToForm) {
+      const normalizedPart = ['A', 'B', 'C', 'D'].includes(part) ? part : 'A';
+      const completion = getWeek2Completion();
+
+      if (normalizedPart !== 'A' && !week2Evidence.predictionLocked) {
+        currentEvidencePart = 'A';
+        setStatus('neutral', 'Complete and lock Part A before moving to the Python evidence steps.');
+      } else if (['C', 'D'].includes(normalizedPart) && !completion.parts.B) {
+        currentEvidencePart = 'B';
+        setStatus('neutral', 'Complete both Program 1 runs and the file save/reopen confirmation before Part C.');
+      } else if (['C', 'D'].includes(normalizedPart) && !['Draft', 'Submitted'].includes(week2Evidence.status)) {
+        currentEvidencePart = 'B';
+        setStatus('neutral', 'Use Save Draft before moving to Part C.');
+      } else if (normalizedPart === 'D' && !completion.parts.C) {
+        currentEvidencePart = 'C';
+        setStatus('neutral', 'Complete the Part C fix log, corrected code, and recorded test before Part D.');
+      } else {
+        currentEvidencePart = normalizedPart;
+      }
+
+      ['A', 'B', 'C', 'D'].forEach(function (letter) {
+        document.getElementById('evidencePanel' + letter).classList.toggle('active', letter === currentEvidencePart);
+        document.getElementById('stepButton' + letter).classList.toggle('active', letter === currentEvidencePart);
+      });
+
+      week2Evidence.currentPart = currentEvidencePart;
+      saveWeek2EvidenceLocal();
+
+      if (scrollToForm !== false) {
+        document.getElementById('week2EvidenceCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function partAFieldsComplete() {
+      collectWeek2EvidenceFromForm();
+      return [
+        week2Evidence.a.variables,
+        week2Evidence.a.ipoInput,
+        week2Evidence.a.ipoProcessing,
+        week2Evidence.a.ipoOutput,
+        week2Evidence.a.prediction,
+        week2Evidence.a.change
+      ].every(Boolean);
+    }
+
+    function lockPredictionAndOpenLab() {
+      if (week2Evidence.predictionLocked) {
+        setStatus('ok', 'Part A is already locked. The Python workspace is open.');
+        return;
+      }
+
+      if (!partAFieldsComplete()) {
+        setStatus('bad', 'Complete A1–A4 before locking Part A.');
+        showEvidencePart('A');
+        return;
+      }
+
+      week2Evidence.predictionLocked = true;
+      week2Evidence.predictionLockedAt = new Date().toISOString();
+      saveWeek2EvidenceLocal();
+      updateWeek2EvidenceUI();
+      loadProgram1IntoEditor(true);
+      setStatus('ok', 'Part A locked. Program 1 is ready in the Script Editor.');
+      showEvidencePart('B');
+    }
+
+    function updateWorkspaceLockState() {
+      const evidenceMode = activeLabMode === 'evidence';
+      const submitted = week2Evidence.status === 'Submitted';
+      const locked = evidenceMode && (!week2Evidence.predictionLocked || submitted);
+      editor.disabled = locked;
+      shellInput.disabled = locked;
+      scriptEditorPane.classList.toggle('workspace-locked', locked);
+      pythonShellPane.classList.toggle('workspace-locked', locked);
+      editorLockNotice.hidden = !locked;
+      editorLockNotice.textContent = submitted
+        ? 'This evidence was submitted and is now read-only. You may review your work, but no further edits or runs are allowed.'
+        : 'Complete and lock Part A before using the Python workspace. Your prediction must be recorded before the first run.';
+
+      document.querySelectorAll('#scriptEditorActions button, #shellActions button').forEach(function (button) {
+        button.disabled = locked;
+      });
+
+      const runButton = document.getElementById('runButton');
+      runButton.disabled = locked;
+      if (!locked) {
+        updatePrimaryRunButton();
+      }
+    }
+
+    function updateFinalSubmissionState() {
+      const submitted = week2Evidence.status === 'Submitted';
+      const lockedEvidenceView = activeLabMode === 'evidence' && submitted;
+      document.body.classList.toggle('submission-locked', lockedEvidenceView);
+      submissionConfirmationPanel.hidden = !lockedEvidenceView;
+
+      studentNameInput.disabled = submitted;
+      studentEmailInput.disabled = submitted;
+      studentSectionInput.disabled = submitted;
+      document.getElementById('pythonFileInput').disabled = lockedEvidenceView;
+
+      document.querySelectorAll(
+        '.toolbar button:not([data-evidence-only])'
+      ).forEach(function (button) {
+        const action = button.getAttribute('onclick') || '';
+        const workspaceLocked = activeLabMode === 'evidence' &&
+          (!week2Evidence.predictionLocked || submitted);
+        button.disabled = button.id === 'runButton'
+          ? workspaceLocked
+          : lockedEvidenceView && !action.includes('copyCode');
+      });
+      document.getElementById('saveRunButton').disabled = submitted;
+      document.getElementById('saveDraftButton').disabled = submitted;
+
+      document.querySelectorAll('#week2EvidenceForm input, #week2EvidenceForm textarea, #week2EvidenceForm select')
+        .forEach(function (control) {
+          control.disabled = submitted;
+        });
+
+      if (submitted) {
+        document.querySelectorAll(
+          '.student-quickbar button[data-evidence-only], .task-sidebar[data-evidence-only] button, ' +
+          '.evidence-save-bar button, #week2EvidenceForm button'
+        ).forEach(function (button) {
+          const action = button.getAttribute('onclick') || '';
+          button.disabled = !action.includes('showEvidencePart');
+        });
+      }
+
+      engineSelect.disabled = lockedEvidenceView;
+      document.querySelectorAll('.settings-area input, .settings-area select, .settings-area textarea, .settings-area button')
+        .forEach(function (control) {
+          control.disabled = lockedEvidenceView;
+        });
+
+      if (!lockedEvidenceView) {
+        updateWorkspaceLockState();
+        loadLibrariesButton.disabled = engineSelect.value === 'brython';
+      }
+
+      if (!submitted || activeLabMode !== 'evidence') {
+        return;
+      }
+
+      const email = studentEmailInput.value.trim().toLowerCase();
+      const submittedAt = week2Evidence.savedAt || 'the recorded submission time';
+      submissionConfirmationPanel.classList.toggle('warning', week2Evidence.emailSent === false);
+
+      if (week2Evidence.emailSent === true) {
+        submissionConfirmationTitle.textContent = 'Evidence sent successfully';
+        submissionConfirmationText.textContent =
+          'Your evidence was submitted on ' + submittedAt + '. A confirmation email was sent to ' + email +
+          '. Editing is now locked.';
+      } else if (week2Evidence.emailSent === false) {
+        submissionConfirmationTitle.textContent = 'Evidence submitted and locked';
+        submissionConfirmationText.textContent =
+          'Your evidence was submitted on ' + submittedAt + ', but the confirmation email could not be sent. ' +
+          'Your work is safely recorded; ask your teacher for help. ' + (week2Evidence.emailStatus || '');
+      } else {
+        submissionConfirmationTitle.textContent = 'Evidence submitted and locked';
+        submissionConfirmationText.textContent =
+          'Your evidence was submitted on ' + submittedAt + '. Editing is now locked. ' +
+          'Email delivery information is not available for this saved record.';
+      }
+    }
+
+    function getWeek2Completion() {
+      collectWeek2EvidenceFromForm();
+      const runInputsDifferent = Boolean(
+        week2Evidence.b.run1Inputs &&
+        week2Evidence.b.run2Inputs &&
+        normalizeForCheck(week2Evidence.b.run1Inputs) !== normalizeForCheck(week2Evidence.b.run2Inputs)
+      );
+      const fixChecks = week2Evidence.c.fixLog.flatMap(function (item) {
+        return [Boolean(item.problem), Boolean(item.reason)];
+      });
+      const checks = [
+        Boolean(week2Evidence.a.variables),
+        Boolean(week2Evidence.a.ipoInput),
+        Boolean(week2Evidence.a.ipoProcessing),
+        Boolean(week2Evidence.a.ipoOutput),
+        Boolean(week2Evidence.a.prediction),
+        Boolean(week2Evidence.a.change),
+        Boolean(week2Evidence.predictionLocked && week2Evidence.predictionLockedAt),
+        Boolean(week2Evidence.b.run1Inputs),
+        Boolean(week2Evidence.b.run1Output),
+        Boolean(week2Evidence.b.run2Inputs),
+        Boolean(week2Evidence.b.run2Output),
+        runInputsDifferent,
+        Boolean(
+          week2Evidence.b.fileDownloaded &&
+          week2Evidence.b.fileReopened &&
+          /^E1_[A-Za-z0-9-]+_[A-Za-z0-9-]+\.py$/i.test(week2Evidence.b.fileName) &&
+          week2Evidence.b.fileName.toLowerCase() === week2Evidence.b.reopenedFileName.toLowerCase()
+        ),
+        ...fixChecks,
+        Boolean(week2Evidence.c.correctedCode),
+        Boolean(week2Evidence.c.testInputs),
+        Boolean(week2Evidence.c.testOutput),
+        Boolean(week2Evidence.d.explanation),
+        Boolean(week2Evidence.d.debugStep),
+        Boolean(week2Evidence.d.debugExplanation),
+        Boolean(week2Evidence.d.integrityConfirmed)
+      ];
+      const completed = checks.filter(Boolean).length;
+      const percent = Math.round((completed / checks.length) * 100);
+      const parts = {
+        A: checks.slice(0, 7).every(Boolean),
+        B: checks.slice(7, 13).every(Boolean),
+        C: checks.slice(13, 24).every(Boolean),
+        D: checks.slice(24).every(Boolean)
+      };
+
+      return {
+        completed: completed,
+        total: checks.length,
+        percent: percent,
+        parts: parts,
+        ready: parts.A && parts.B && parts.C && parts.D,
+        runInputsDifferent: runInputsDifferent
+      };
+    }
+
+    function setFinalChecklistItem(id, done) {
+      const item = document.getElementById(id);
+      item.classList.toggle('done', done);
+      item.querySelector('span').textContent = done ? '✓' : '○';
+    }
+
+    function updateWeek2EvidenceUI() {
+      const completion = getWeek2Completion();
+      evidenceProgressFill.style.width = completion.percent + '%';
+      evidenceCompletionPill.textContent = completion.percent + '% complete';
+      exerciseCounter.textContent = completion.percent + '%';
+      submitEvidenceButton.disabled = week2Evidence.status === 'Submitted' || !completion.ready;
+
+      ['A', 'B', 'C', 'D'].forEach(function (letter) {
+        const done = completion.parts[letter];
+        const sideState = document.getElementById('sideState' + letter);
+        sideState.textContent = done ? 'Complete' : 'Not complete';
+        sideState.classList.toggle('done', done);
+        document.getElementById('stepButton' + letter).classList.toggle('complete', done);
+      });
+
+      const partAInputs = ['eA1Variables', 'eA2Input', 'eA2Processing', 'eA2Output', 'eA3Prediction', 'eA4Change'];
+      partAInputs.forEach(function (id) {
+        document.getElementById(id).readOnly = Boolean(
+          week2Evidence.predictionLocked || week2Evidence.status === 'Submitted'
+        );
+      });
+      const lockButton = document.getElementById('lockPredictionButton');
+      lockButton.disabled = Boolean(week2Evidence.predictionLocked || week2Evidence.status === 'Submitted');
+      lockButton.textContent = week2Evidence.status === 'Submitted'
+        ? 'Evidence Submitted & Locked ✓'
+        : week2Evidence.predictionLocked
+          ? 'Part A Locked ✓'
+          : 'Lock Part A & Open Python Lab';
+
+      const fileDone = Boolean(
+        week2Evidence.b.fileDownloaded &&
+        week2Evidence.b.fileReopened &&
+        week2Evidence.b.fileName.toLowerCase() === week2Evidence.b.reopenedFileName.toLowerCase()
+      );
+      const fileStatus = document.getElementById('fileConfirmationStatus');
+      fileStatus.classList.toggle('done', fileDone);
+      fileStatus.textContent = fileDone
+        ? 'Confirmed: ' + (week2Evidence.b.reopenedFileName || week2Evidence.b.fileName) + ' was downloaded and reopened.'
+        : 'Not confirmed: download the file and reopen it in this app.';
+      document.getElementById('sidebarFileStatus').textContent = fileStatus.textContent;
+
+      setFinalChecklistItem('finalCheck1', completion.ready);
+      setFinalChecklistItem('finalCheck2', completion.parts.B && Boolean(week2Evidence.c.testInputs && week2Evidence.c.testOutput));
+      setFinalChecklistItem('finalCheck3', Boolean(week2Evidence.c.correctedCode));
+      setFinalChecklistItem('finalCheck4', fileDone);
+      setFinalChecklistItem('finalCheck5', completion.parts.D);
+
+      submissionStatusBadge.textContent = week2Evidence.status === 'Submitted'
+        ? 'Submitted'
+        : week2Evidence.status === 'Draft'
+          ? 'Draft saved'
+          : 'Draft not saved';
+
+      updateWorkspaceLockState();
+      updateFinalSubmissionState();
+      saveWeek2EvidenceLocal();
+    }
+
+    function replaceEditorCode(code, label, force) {
+      if (!week2Evidence.predictionLocked) {
+        setStatus('bad', 'Lock Part A before loading code into the Python workspace.');
+        showEvidencePart('A');
+        return false;
+      }
+
+      const current = editor.value.trim();
+      const next = String(code || '').trim();
+      if (!force && current && current !== next && !window.confirm('Replace the current editor code with ' + label + '?')) {
+        return false;
+      }
+
+      editor.value = String(code || '');
+      week2Evidence.editorCode = editor.value;
+      localStorage.setItem('pythonIdeCode', editor.value);
+      updateEditor();
+      saveWeek2EvidenceLocal();
+      switchWorkspace('editor');
+      return true;
+    }
+
+    function loadProgram1IntoEditor(force) {
+      return replaceEditorCode(WEEK2_ACTIVITY.program1, 'Program 1', Boolean(force));
+    }
+
+    function loadFaultyProgram2IntoEditor() {
+      const completion = getWeek2Completion();
+      if (!completion.parts.B || !['Draft', 'Submitted'].includes(week2Evidence.status)) {
+        setStatus('bad', 'Complete Part B and save a draft before loading Program 2.');
+        showEvidencePart('B');
+        return;
+      }
+
+      if (replaceEditorCode(WEEK2_ACTIVITY.program2Faulty, 'the faulty Program 2', false)) {
+        showEvidencePart('C', false);
+        setStatus('neutral', 'Faulty Program 2 loaded. Debug it in the Script Editor.');
+      }
+    }
+
+    function captureCorrectedCodeFromEditor() {
+      if (!week2Evidence.predictionLocked) {
+        setStatus('bad', 'Lock Part A first.');
+        return;
+      }
+      if (!editor.value.trim()) {
+        setStatus('bad', 'The Script Editor is empty.');
+        return;
+      }
+      setFieldValue('eC2CorrectedCode', editor.value);
+      week2Evidence.c.correctedCode = editor.value;
+      saveWeek2EvidenceLocal();
+      updateWeek2EvidenceUI();
+      setStatus('ok', 'Current editor code copied into C2.');
+    }
+
+    function loadCorrectedCodeIntoEditor() {
+      collectWeek2EvidenceFromForm();
+      if (!week2Evidence.c.correctedCode) {
+        setStatus('bad', 'Paste or capture corrected code in C2 first.');
+        return;
+      }
+      replaceEditorCode(week2Evidence.c.correctedCode, 'your corrected C2 code', false);
+    }
+
+    function formatEvidenceInputs(inputLog) {
+      const values = inputLog.map(function (item) { return item.value; });
+      return 'Name: ' + (values[0] || '') + '\nMinutes: ' + (values[1] || '');
+    }
+
+    async function runAndRecordEvidence(programKey, runIndex) {
+      if (!week2Evidence.predictionLocked) {
+        setStatus('bad', 'Complete and lock Part A before recording a run.');
+        showEvidencePart('A');
+        return;
+      }
+
+      if (programKey === 'program2') {
+        collectWeek2EvidenceFromForm();
+        if (!week2Evidence.c.correctedCode) {
+          setStatus('bad', 'Record your corrected Program 2 code in C2 before testing it.');
+          showEvidencePart('C');
+          return;
+        }
+        replaceEditorCode(week2Evidence.c.correctedCode, 'your corrected Program 2', true);
+      }
+
+      switchWorkspace('editor');
+      engineSelect.value = 'brython';
+      changeEngine();
+      activeEvidenceCapture = { programKey: programKey, runIndex: runIndex };
+      activeInputLog = [];
+      lastRun.ok = null;
+
+      try {
+        await runPythonCode();
+
+        if (lastRun.ok !== true) {
+          setStatus('bad', 'The run contains an error. Use the Output box to debug it before recording evidence.');
+          return;
+        }
+
+        if (activeInputLog.length < 2) {
+          setStatus('bad', 'This evidence run must ask for both a name and minutes. Check the program and run it again.');
+          return;
+        }
+
+        const inputs = formatEvidenceInputs(activeInputLog);
+        const output = outputBox.textContent.trim();
+
+        if (programKey === 'program1') {
+          if (runIndex === 1 && week2Evidence.b.run1Inputs &&
+              normalizeForCheck(inputs) === normalizeForCheck(week2Evidence.b.run1Inputs)) {
+            setStatus('bad', 'Run 2 must use a different set of inputs from Run 1.');
+            return;
+          }
+
+          const prefix = runIndex === 0 ? 'eRun1' : 'eRun2';
+          setFieldValue(prefix + 'Inputs', inputs);
+          setFieldValue(prefix + 'Output', output);
+          if (runIndex === 0) {
+            week2Evidence.b.run1Inputs = inputs;
+            week2Evidence.b.run1Output = output;
+          } else {
+            week2Evidence.b.run2Inputs = inputs;
+            week2Evidence.b.run2Output = output;
+          }
+          showEvidencePart('B', false);
+          setStatus('ok', 'Program 1 Run ' + (runIndex + 1) + ' recorded.');
+        } else {
+          setFieldValue('eC3Inputs', inputs);
+          setFieldValue('eC3Output', output);
+          week2Evidence.c.testInputs = inputs;
+          week2Evidence.c.testOutput = output;
+          week2Evidence.c.correctedCode = editor.value;
+          setFieldValue('eC2CorrectedCode', editor.value);
+          showEvidencePart('C', false);
+          setStatus('ok', 'Corrected Program 2 test recorded.');
+        }
+
+        week2Evidence.editorCode = editor.value;
+        week2Evidence.lastOutput = output;
+        saveWeek2EvidenceLocal();
+        updateWeek2EvidenceUI();
+
+      } finally {
+        activeEvidenceCapture = null;
+        activeInputLog = [];
+      }
+    }
+
+    function buildWeek2Payload(statusValue) {
+      const profile = validateStudentProfile();
+      const completion = getWeek2Completion();
+      return {
+        timestamp: new Date().toISOString(),
+        studentName: profile.name,
+        studentEmail: profile.email,
+        section: profile.section,
+        week: WEEK2_ACTIVITY.week,
+        activityId: WEEK2_ACTIVITY.id,
+        activityTitle: WEEK2_ACTIVITY.title,
+        category: WEEK2_ACTIVITY.category,
+        pointsPossible: WEEK2_ACTIVITY.pointsPossible,
+        status: statusValue,
+        completionPercent: completion.percent,
+        readyForReview: completion.ready,
+        evidence: collectWeek2EvidenceFromForm(),
+        editorCode: editor.value,
+        lastOutput: outputBox.textContent
+      };
+    }
+
+    async function saveWeek2Draft() {
+      if (week2Evidence.status === 'Submitted') {
+        setSaveStatus('bad', 'This evidence was already submitted. Editing and draft saving are locked.');
+        updateFinalSubmissionState();
+        return;
+      }
+      if (!saveStudentProfile()) {
+        return;
+      }
+      await persistWeek2Evidence('Draft');
+    }
+
+    async function submitWeek2Evidence() {
+      if (week2Evidence.status === 'Submitted') {
+        setSaveStatus('bad', 'This evidence was already submitted and cannot be submitted again.');
+        updateFinalSubmissionState();
+        return;
+      }
+      if (!saveStudentProfile()) {
+        return;
+      }
+
+      const completion = getWeek2Completion();
+      if (!completion.ready) {
+        const firstIncomplete = ['A', 'B', 'C', 'D'].find(function (letter) {
+          return !completion.parts[letter];
+        }) || 'A';
+        setSaveStatus('bad', 'The activity is not ready to submit. Complete the remaining checklist items.');
+        showEvidencePart(firstIncomplete);
+        return;
+      }
+
+      if (!window.confirm('Submit Learning Evidence 1 as your final individual work?')) {
+        return;
+      }
+
+      await persistWeek2Evidence('Submitted');
+    }
+
+    function persistWeek2Evidence(statusValue) {
+      const payload = buildWeek2Payload(statusValue);
+      const savedAt = new Date().toLocaleString();
+      setSaveStatus('neutral', statusValue === 'Submitted' ? 'Submitting activity...' : 'Saving draft...');
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        week2Evidence.status = statusValue;
+        week2Evidence.savedAt = savedAt;
+        if (statusValue === 'Submitted') {
+          week2Evidence.emailSent = false;
+          week2Evidence.emailStatus = 'Demo mode cannot send email. Deploy the Apps Script web app to enable email confirmation.';
+        }
+        saveWeek2EvidenceLocal();
+        updateWeek2EvidenceUI();
+        setSaveStatus(
+          statusValue === 'Submitted' ? 'neutral' : 'ok',
+          'Demo mode: ' + (statusValue === 'Submitted'
+            ? 'submission saved locally; email is available only in the deployed Apps Script web app.'
+            : 'draft saved in this browser.')
+        );
+        return Promise.resolve(payload);
+      }
+
+      return new Promise(function (resolve) {
+        google.script.run
+          .withSuccessHandler(function (response) {
+            if (response && response.ok) {
+              week2Evidence.status = response.status || statusValue;
+              week2Evidence.savedAt = response.savedAt || savedAt;
+              week2Evidence.emailSent = response.emailSent === true
+                ? true
+                : response.emailSent === false
+                  ? false
+                  : null;
+              week2Evidence.emailStatus = response.emailStatus || '';
+              saveWeek2EvidenceLocal();
+              updateWeek2EvidenceUI();
+              setSaveStatus('ok', response.message || (statusValue + ' saved.'));
+            } else {
+              setSaveStatus('bad', response && response.message ? response.message : 'The evidence could not be saved.');
+              if (response && response.locked) {
+                loadWeek2Evidence();
+              }
+            }
+            resolve(response);
+          })
+          .withFailureHandler(function (error) {
+            setSaveStatus('bad', 'Saving error: ' + String(error && error.message ? error.message : error));
+            resolve(null);
+          })
+          .saveWeek2Evidence(payload);
+      });
+    }
+
+    function loadWeek2Evidence() {
+      const validation = validateStudentProfile();
+      if (!validation.ok) {
+        setSaveStatus('bad', validation.message);
+        return;
+      }
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        week2Evidence = loadWeek2EvidenceLocal();
+        applyWeek2EvidenceToForm();
+        showEvidencePart(week2Evidence.currentPart || 'A', false);
+        updateWeek2EvidenceUI();
+        setSaveStatus('ok', 'Local Week 2 draft loaded.');
+        return;
+      }
+
+      setSaveStatus('neutral', 'Loading Week 2 evidence...');
+      google.script.run
+        .withSuccessHandler(function (response) {
+          if (!response || !response.ok) {
+            setSaveStatus('bad', response && response.message ? response.message : 'No saved evidence could be loaded.');
+            return;
+          }
+
+          if (!response.found) {
+            setSaveStatus('neutral', 'No Google Sheets draft found. Your local browser copy remains available.');
+            return;
+          }
+
+          week2Evidence = normalizeWeek2Evidence(response.evidence);
+          week2Evidence.status = response.status || week2Evidence.status;
+          week2Evidence.savedAt = response.savedAt || week2Evidence.savedAt;
+          week2Evidence.emailSent = response.emailSent === true
+            ? true
+            : response.emailSent === false
+              ? false
+              : null;
+          week2Evidence.emailStatus = response.emailStatus || '';
+          if (response.editorCode) {
+            week2Evidence.editorCode = response.editorCode;
+          }
+          if (response.lastOutput) {
+            week2Evidence.lastOutput = response.lastOutput;
+          }
+          applyWeek2EvidenceToForm();
+          showEvidencePart(week2Evidence.currentPart || 'A', false);
+          updateWeek2EvidenceUI();
+          setSaveStatus('ok', 'Week 2 ' + (week2Evidence.status === 'Submitted' ? 'submission' : 'draft') + ' loaded.');
+        })
+        .withFailureHandler(function (error) {
+          setSaveStatus('bad', 'Loading error: ' + String(error && error.message ? error.message : error));
+        })
+        .getWeek2Evidence(validation.email, WEEK2_ACTIVITY.id);
+    }
+
+    function suggestEvidenceFileName(fullName) {
+      const parts = String(fullName || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^A-Za-z0-9\s-]/g, '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      if (parts.length < 2) {
+        return 'E1_Lastname_Firstname.py';
+      }
+      const firstName = parts[0];
+      const lastName = parts[parts.length - 1];
+      return 'E1_' + lastName + '_' + firstName + '.py';
+    }
+
+    function handlePythonFileOpen(event) {
+      const input = event.target;
+      if (activeLabMode === 'evidence' && !week2Evidence.predictionLocked) {
+        setStatus('bad', 'Complete and lock Part A before reopening a Python file.');
+        showEvidencePart('A');
+        input.value = '';
+        return;
+      }
+
+      const file = input.files && input.files[0];
+      if (!file) {
+        return;
+      }
+
+      if (!/\.py$/i.test(file.name)) {
+        setStatus('bad', 'Choose a Python file ending in .py.');
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        editor.value = String(reader.result || '');
+        updateEditor();
+        switchWorkspace('editor');
+
+        if (activeLabMode === 'sandbox') {
+          localStorage.setItem('glmPythonSandboxCode', editor.value);
+          setStatus('ok', file.name + ' opened in the Practice Sandbox.');
+        } else {
+          week2Evidence.editorCode = editor.value;
+          week2Evidence.b.reopenedFileName = file.name;
+          week2Evidence.b.fileReopened = file.name.toLowerCase() === week2Evidence.b.fileName.toLowerCase();
+          saveWeek2EvidenceLocal();
+          updateWeek2EvidenceUI();
+        }
+
+        if (activeLabMode === 'evidence' && week2Evidence.b.fileReopened) {
+          setStatus('ok', file.name + ' reopened successfully.');
+        } else if (activeLabMode === 'evidence') {
+          setStatus('bad', 'The file opened, but its name does not match ' + week2Evidence.b.fileName + '.');
+        }
+        input.value = '';
+      };
+      reader.onerror = function () {
+        setStatus('bad', 'The Python file could not be opened.');
+        input.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function loadBrandLogo() {
+      if (
+        typeof google === 'undefined' ||
+        !google.script ||
+        !google.script.run
+      ) {
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function (dataUri) {
+          if (!dataUri) {
+            return;
+          }
+
+          const img = document.getElementById('brandLogo');
+          const fallback = document.getElementById('logoFallback');
+
+          img.src = dataUri;
+          img.style.display = 'block';
+          fallback.style.display = 'none';
+        })
+        .getLogoDataUri();
+    }
+
+    function switchWorkspace(mode, remember) {
+      activeWorkspace = mode === 'shell' ? 'shell' : 'editor';
+      const showingShell = activeWorkspace === 'shell';
+
+      scriptEditorPane.hidden = showingShell;
+      pythonShellPane.hidden = !showingShell;
+      scriptEditorActions.hidden = showingShell;
+      shellActions.hidden = !showingShell;
+
+      editorTab.classList.toggle('active', !showingShell);
+      shellTab.classList.toggle('active', showingShell);
+      editorTab.setAttribute('aria-selected', String(!showingShell));
+      shellTab.setAttribute('aria-selected', String(showingShell));
+      updatePrimaryRunButton();
+
+      if (remember !== false) {
+        localStorage.setItem('pythonLabWorkspace', activeWorkspace);
+      }
+
+      window.setTimeout(function () {
+        if (showingShell) {
+          shellInput.focus();
+        } else {
+          editor.focus();
+          updateEditor();
+        }
+      }, 0);
+    }
+
+    function updatePrimaryRunButton() {
+      const runButton = document.getElementById('runButton');
+
+      if (!runButton || runButton.disabled) {
+        return;
+      }
+
+      runButton.textContent = activeWorkspace === 'shell'
+        ? '▶ Run Shell Line'
+        : '▶ Run Python';
+    }
+
+    function runCurrentWorkspace() {
+      return activeWorkspace === 'shell'
+        ? runShellCommand()
+        : runPythonCode();
+    }
+
+    function clearCurrentWorkspace() {
+      if (activeLabMode === 'evidence' && !week2Evidence.predictionLocked) {
+        setStatus('bad', 'Complete and lock Part A before changing the Python workspace.');
+        showEvidencePart('A');
+        return;
+      }
+
+      if (activeWorkspace === 'shell') {
+        clearPythonShell();
+        return;
+      }
+
+      clearEditor();
+    }
+
+    function appendShellText(text) {
+      shellTranscript.textContent += normalizeOutput(text);
+      shellTranscript.scrollTop = shellTranscript.scrollHeight;
+    }
+
+    function appendShellResult(text) {
+      const normalized = normalizeOutput(text);
+      appendShellText(normalized);
+
+      if (outputBox.textContent === 'No output yet.') {
+        outputBox.textContent = '';
+      }
+
+      outputBox.textContent += normalized;
+      outputBox.scrollTop = outputBox.scrollHeight;
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxOutput', outputBox.textContent);
+      }
+    }
+
+    function appendShellPrompt(command) {
+      const lines = String(command).replace(/\r\n/g, '\n').split('\n');
+      const displayed = lines.map(function (line, index) {
+        return (index === 0 ? '>>> ' : '... ') + line;
+      }).join('\n');
+
+      appendShellText(displayed + '\n');
+    }
+
+    function clearPythonShell() {
+      shellTranscript.textContent =
+        'GLM Python Shell\n' +
+        'Screen cleared. Your variables and functions are still available.\n\n';
+      shellInput.focus();
+    }
+
+    async function restartPythonShell() {
+      if (brythonReady && window.resetBrythonShell) {
+        window.resetBrythonShell();
+      }
+
+      if (pyodideShellGlobals && pyodideShellGlobals.destroy) {
+        pyodideShellGlobals.destroy();
+      }
+
+      pyodideShellGlobals = null;
+      shellHistory = [];
+      shellHistoryIndex = 0;
+      shellTranscript.textContent =
+        'GLM Python Shell\n' +
+        'Session restarted. Previous variables and functions were removed.\n\n';
+      setStatus('ok', 'Python Shell session restarted.');
+      shellInput.focus();
+    }
+
+    function moveShellHistory(direction) {
+      if (shellHistory.length === 0) {
+        return;
+      }
+
+      shellHistoryIndex = Math.max(0, Math.min(
+        shellHistory.length,
+        shellHistoryIndex + direction
+      ));
+
+      shellInput.value = shellHistoryIndex < shellHistory.length
+        ? shellHistory[shellHistoryIndex]
+        : '';
+      shellInput.setSelectionRange(shellInput.value.length, shellInput.value.length);
+    }
+
+    async function runShellCommand() {
+      if (activeLabMode === 'evidence' && !week2Evidence.predictionLocked) {
+        setStatus('bad', 'Complete and lock Part A before using the Python Shell.');
+        showEvidencePart('A');
+        return;
+      }
+
+      const command = shellInput.value.replace(/\r\n/g, '\n');
+
+      if (!command.trim()) {
+        shellInput.focus();
+        return;
+      }
+
+      shellHistory.push(command);
+      shellHistoryIndex = shellHistory.length;
+      appendShellPrompt(command);
+      outputBox.textContent = '';
+      shellInput.value = '';
+      shellRunButton.disabled = true;
+      shellRunButton.textContent = 'Running...';
+      const primaryRunButton = document.getElementById('runButton');
+      primaryRunButton.disabled = true;
+      primaryRunButton.textContent = 'Running...';
+      shellCaptureActive = true;
+
+      try {
+        if (getEngine() === 'brython') {
+          if (!brythonReady || !window.runBrythonShellCommand) {
+            appendShellResult('Brython is not ready yet. Please try again.\n');
+            setStatus('bad', 'Brython is not ready.');
+            return;
+          }
+
+          window.runBrythonShellCommand(command);
+          setStatus('ok', 'Shell command finished with Brython.');
+          return;
+        }
+
+        await runPyodideShellCommand(command);
+
+      } finally {
+        shellCaptureActive = false;
+        shellRunButton.disabled = false;
+        shellRunButton.textContent = 'Run line';
+        primaryRunButton.disabled = false;
+        updatePrimaryRunButton();
+        shellInput.focus();
+      }
+    }
+
+    async function runPyodideShellCommand(command) {
+      await initializePyodide();
+
+      if (!pyodideReady) {
+        appendShellResult('Pyodide could not start.\n');
+        return;
+      }
+
+      if (!pyodideShellGlobals) {
+        pyodideShellGlobals = pyodide.runPython('{' +
+          '"__name__": "__main__", ' +
+          '"__package__": None' +
+        '}');
+      }
+
+      setStatus('neutral', 'Running shell command with Pyodide...');
+
+      try {
+        try {
+          await pyodide.loadPackagesFromImports(command);
+        } catch (autoLoadError) {
+          appendShellResult('Package auto-loading warning: ' + String(autoLoadError) + '\n');
+        }
+
+        const result = await pyodide.runPythonAsync(command, {
+          globals: pyodideShellGlobals
+        });
+
+        if (result !== undefined && result !== null) {
+          let displayValue = '';
+
+          try {
+            displayValue = result && typeof result.toString === 'function'
+              ? result.toString()
+              : String(result);
+          } finally {
+            if (result && result.destroy && result !== pyodideShellGlobals) {
+              result.destroy();
+            }
+          }
+
+          if (displayValue !== 'None') {
+            appendShellResult(displayValue + '\n');
+          }
+        }
+
+        setStatus('ok', 'Shell command finished with Pyodide.');
+
+      } catch (error) {
+        appendShellResult(String(error) + '\n');
+        setStatus('bad', 'Python Shell error.');
+      }
+    }
+
+    function startBrythonRuntime() {
+      try {
+        brython();
+        brythonReady = true;
+
+        if (getEngine() === 'brython') {
+          setStatus('ok', 'Brython is ready.');
+          document.getElementById('runtimeInfo').textContent =
+            'Ready. Brython runs basic Python quickly in the browser.';
+        }
+      } catch (error) {
+        setStatus('bad', 'Brython failed to start.');
+        appendLine(String(error));
+      }
+    }
+
+    function getEngine() {
+      return engineSelect.value;
+    }
+
+    function changeEngine() {
+      const engine = getEngine();
+      localStorage.setItem('pythonIdeEngine', engine);
+
+      if (engine === 'brython') {
+        enginePill.textContent = 'Brython selected';
+        engineHelp.innerHTML = '<strong>Brython:</strong> best for variables, conditionals, loops, functions, lists, dictionaries, input(), print(), and browser GUI activities.';
+        librariesPanel.classList.add('disabled-panel');
+        loadLibrariesButton.disabled = true;
+        libraryHint.textContent = 'External library loading is disabled in Brython. Use Pyodide for numpy, pandas, matplotlib, scipy, and similar libraries.';
+
+        if (brythonReady) {
+          setStatus('ok', 'Brython is ready.');
+        } else {
+          setStatus('neutral', 'Starting Brython...');
+        }
+      }
+
+      if (engine === 'pyodide') {
+        enginePill.textContent = 'Pyodide selected';
+        engineHelp.innerHTML = '<strong>Pyodide:</strong> best for numpy, pandas, matplotlib, CSV files, scientific computing, and data visualization.';
+        librariesPanel.classList.remove('disabled-panel');
+        loadLibrariesButton.disabled = false;
+        libraryHint.textContent = 'Select packages and click Load Libraries, or run code and Pyodide will try to auto-load imports.';
+
+        if (pyodideReady) {
+          setStatus('ok', 'Pyodide is ready.');
+        } else {
+          setStatus('neutral', 'Pyodide selected. It will load when you run code or load libraries.');
+        }
+      }
+    }
+
+    async function initializePyodide() {
+      if (pyodideReady) {
+        return;
+      }
+
+      try {
+        setStatus('neutral', 'Loading Pyodide runtime...');
+        document.getElementById('runtimeInfo').textContent =
+          'Pyodide is starting. The first load may take a moment.';
+
+        pyodide = await loadPyodide({
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.29.4/full/'
+        });
+
+        pyodide.setStdout({
+          batched: function (text) {
+            appendOutput(text);
+          }
+        });
+
+        pyodide.setStderr({
+          batched: function (text) {
+            appendOutput(text);
+          }
+        });
+
+        pyodide.setStdin({
+          stdin: function () {
+            return getNextPythonInput('Python input() is asking for a value:');
+          }
+        });
+
+        await setupPyodideGuiModule();
+
+        pyodideReady = true;
+        setStatus('ok', 'Pyodide is ready.');
+        document.getElementById('runtimeInfo').textContent =
+          'Ready. You can run Python code and load supported Pyodide libraries.';
+
+      } catch (err) {
+        setStatus('bad', 'Pyodide failed to load.');
+        appendLine(String(err));
+      }
+    }
+
+    async function setupPyodideGuiModule() {
+      await pyodide.runPythonAsync(`
+import sys
+import types
+from js import webgui
+
+gui = types.ModuleType("gui")
+
+def clear():
+    webgui.clear()
+
+def title(text):
+    webgui.title(str(text))
+
+def text(value):
+    webgui.text(str(value))
+
+def input(id, placeholder=""):
+    webgui.input(str(id), str(placeholder))
+
+def value(id):
+    return str(webgui.value(str(id)))
+
+def button(label, callback):
+    webgui.button(str(label), callback)
+
+def html(markup):
+    webgui.html(str(markup))
+
+gui.clear = clear
+gui.title = title
+gui.text = text
+gui.input = input
+gui.value = value
+gui.button = button
+gui.html = html
+
+sys.modules["gui"] = gui
+`);
+    }
+
+    function setupBrowserGuiBridge() {
+      window.webgui = {
+        clear: function () {
+          guiPreview.innerHTML = '';
+          guiPreview.className = '';
+        },
+
+        title: function (text) {
+          guiPreview.className = '';
+          const h = document.createElement('h3');
+          h.textContent = text;
+          guiPreview.appendChild(h);
+        },
+
+        text: function (text) {
+          guiPreview.className = '';
+          const p = document.createElement('p');
+          p.textContent = text;
+          guiPreview.appendChild(p);
+        },
+
+        input: function (id, placeholder) {
+          guiPreview.className = '';
+          const input = document.createElement('input');
+          input.id = 'gui_' + id;
+          input.placeholder = placeholder || '';
+          guiPreview.appendChild(input);
+        },
+
+        value: function (id) {
+          const element = document.getElementById('gui_' + id);
+          return element ? element.value : '';
+        },
+
+        button: function (label, callback) {
+          guiPreview.className = '';
+          const button = document.createElement('button');
+          button.textContent = label;
+          button.onclick = function () {
+            try {
+              callback();
+            } catch (err) {
+              appendLine('GUI error: ' + String(err));
+            }
+          };
+          guiPreview.appendChild(button);
+        },
+
+        html: function (markup) {
+          guiPreview.className = '';
+          const div = document.createElement('div');
+          div.innerHTML = markup;
+          guiPreview.appendChild(div);
+        }
+      };
+    }
+
+
+    function setupLearningPath() {
+      exerciseList.innerHTML = '';
+
+      learningPath.forEach(function (exercise, index) {
+        const card = document.createElement('div');
+        card.className = 'exercise-card';
+        card.id = 'exerciseCard_' + exercise.id;
+        card.onclick = function () {
+          selectExercise(exercise.id, false);
+        };
+
+        const saved = localProgress[exercise.id];
+        const savedStatus = saved ? saved.status : 'Not started';
+
+        card.innerHTML =
+          '<h3>' + escapeHtml(exercise.title) + '</h3>' +
+          '<p>' + escapeHtml(exercise.objective) + '</p>' +
+          '<div class="exercise-meta">' +
+          '<span class="level-tag">' + escapeHtml(exercise.level) + '</span>' +
+          '<span class="level-tag">' + escapeHtml(exercise.topic) + '</span>' +
+          '<span class="status-tag" id="statusTag_' + exercise.id + '">' + escapeHtml(savedStatus) + '</span>' +
+          '</div>';
+
+        exerciseList.appendChild(card);
+      });
+
+      selectExercise(activeExerciseId, false);
+      updateExerciseCounter();
+    }
+
+    function getExercise(id) {
+      return learningPath.find(function (exercise) {
+        return exercise.id === id;
+      }) || learningPath[0];
+    }
+
+    function selectExercise(id, loadStarter) {
+      activeExerciseId = id;
+      localStorage.setItem('pythonLabActiveExercise', activeExerciseId);
+
+      document.querySelectorAll('.exercise-card').forEach(function (card) {
+        card.classList.remove('active');
+      });
+
+      const card = document.getElementById('exerciseCard_' + activeExerciseId);
+      if (card) {
+        card.classList.add('active');
+      }
+
+      const exercise = getExercise(activeExerciseId);
+      const saved = localProgress[activeExerciseId];
+      const savedInfo = saved
+        ? '<br><strong>Last saved:</strong> ' + escapeHtml(saved.status) + ' · ' + escapeHtml(saved.score + '%') + ' · ' + escapeHtml(saved.savedAt || '')
+        : '';
+
+      exerciseDetails.innerHTML =
+        '<strong>' + escapeHtml(exercise.level + ' · ' + exercise.topic) + '</strong><br>' +
+        '<strong>' + escapeHtml(exercise.title) + '</strong><br>' +
+        escapeHtml(exercise.instructions) +
+        '<br><strong>Recommended engine:</strong> ' + escapeHtml(exercise.engine) +
+        savedInfo;
+
+      engineSelect.value = exercise.engine;
+      changeEngine();
+
+      if (loadStarter) {
+        loadSelectedExerciseStarter();
+      }
+
+      updateExerciseCounter();
+    }
+
+    function loadSelectedExerciseStarter() {
+      loadProgram1IntoEditor();
+    }
+
+    function updateExerciseCounter() {
+      const completed = Object.keys(localProgress).filter(function (key) {
+        const status = localProgress[key].status;
+        return status === 'Completed' || status === 'Mastery evidence';
+      }).length;
+
+      exerciseCounter.textContent = completed + ' / ' + learningPath.length;
+    }
+
+    function loadStudentProfile() {
+      studentNameInput.value = localStorage.getItem('pythonLabStudentName') || '';
+      studentEmailInput.value = localStorage.getItem('pythonLabStudentEmail') || '';
+      studentSectionInput.value = localStorage.getItem('pythonLabStudentSection') || '';
+      updateProfilePill();
+    }
+
+    function saveStudentProfile() {
+      const validation = validateStudentProfile();
+
+      if (!validation.ok) {
+        setSaveStatus('bad', validation.message);
+        return false;
+      }
+
+      localStorage.setItem('pythonLabStudentName', studentNameInput.value.trim());
+      localStorage.setItem('pythonLabStudentEmail', studentEmailInput.value.trim().toLowerCase());
+      localStorage.setItem('pythonLabStudentSection', studentSectionInput.value);
+
+      const currentFileName = getFieldValue('eFileName');
+      if (!currentFileName || currentFileName === 'E1_Lastname_Firstname.py') {
+        const suggested = suggestEvidenceFileName(studentNameInput.value.trim());
+        setFieldValue('eFileName', suggested);
+        week2Evidence.b.fileName = suggested;
+        saveWeek2EvidenceLocal();
+      }
+
+      updateProfilePill();
+      setSaveStatus('ok', 'Profile saved locally.');
+      return true;
+    }
+
+    function updateProfilePill() {
+      const email = studentEmailInput.value.trim().toLowerCase();
+      const section = studentSectionInput.value;
+      profilePill.style.display = 'inline-flex';
+
+      if (email.endsWith('@glm.edu.co') && /^9[A-Z]$/.test(section)) {
+        profilePill.textContent = 'Ready';
+        profilePill.style.background = '#dcfae6';
+        profilePill.style.color = 'var(--success)';
+      } else {
+        profilePill.textContent = 'Not saved';
+        profilePill.style.background = '#eef4ff';
+        profilePill.style.color = 'var(--blue)';
+      }
+    }
+
+    studentNameInput.addEventListener('input', updateProfilePill);
+    studentEmailInput.addEventListener('input', updateProfilePill);
+    studentSectionInput.addEventListener('change', updateProfilePill);
+
+    function validateStudentProfile() {
+      const name = studentNameInput.value.trim();
+      const email = studentEmailInput.value.trim().toLowerCase();
+      const section = studentSectionInput.value.trim().toUpperCase();
+
+      if (name.length < 3) {
+        return { ok: false, message: 'Please write the full student name.' };
+      }
+
+      if (!/^[^\s@]+@glm\.edu\.co$/i.test(email)) {
+        return { ok: false, message: 'Use a valid institutional email ending in @glm.edu.co.' };
+      }
+
+      if (!/^9[A-Z]$/.test(section)) {
+        return { ok: false, message: 'Select your Grade 9 section.' };
+      }
+
+      return { ok: true, name: name, email: email, section: section };
+    }
+
+    function getNextPythonInput(promptText) {
+      if (currentAutoInputs.length > 0) {
+        const nextValue = currentAutoInputs.shift();
+        if (activeEvidenceCapture) {
+          activeInputLog.push({ prompt: String(promptText || ''), value: String(nextValue) });
+        }
+        appendLine('[Auto input] ' + String(nextValue));
+        return String(nextValue);
+      }
+
+      const answer = window.prompt(promptText || 'Python input() is asking for a value:');
+      const value = answer === null ? '' : answer;
+      if (activeEvidenceCapture) {
+        activeInputLog.push({ prompt: String(promptText || ''), value: String(value) });
+      }
+      return value;
+    }
+
+    function recordRunResult(ok, statusMessage) {
+      lastRun = {
+        ok: Boolean(ok),
+        status: statusMessage || (ok ? 'Program finished.' : 'Python error.'),
+        output: outputBox.textContent,
+        engine: getEngine(),
+        at: new Date().toISOString()
+      };
+    }
+
+    function evaluateExerciseResult(exercise, runOk) {
+      const code = editor.value;
+      const output = normalizeForCheck(outputBox.textContent);
+      const missingOutput = [];
+      const missingCode = [];
+
+      (exercise.expectedContains || []).forEach(function (expected) {
+        if (!output.includes(normalizeForCheck(expected))) {
+          missingOutput.push(expected);
+        }
+      });
+
+      (exercise.requiredCode || []).forEach(function (required) {
+        if (!normalizeForCheck(code).includes(normalizeForCheck(required))) {
+          missingCode.push(required);
+        }
+      });
+
+      const checks = (exercise.expectedContains || []).length + (exercise.requiredCode || []).length + 1;
+      const passed = (runOk ? 1 : 0) +
+        ((exercise.expectedContains || []).length - missingOutput.length) +
+        ((exercise.requiredCode || []).length - missingCode.length);
+
+      const score = Math.max(0, Math.round((passed / Math.max(1, checks)) * 100));
+      const passedAll = runOk && missingOutput.length === 0 && missingCode.length === 0;
+
+      let feedback = '';
+
+      if (!runOk) {
+        feedback += 'The program has a Python/runtime error. ';
+      }
+
+      if (missingOutput.length > 0) {
+        feedback += 'Missing expected output: ' + missingOutput.join(', ') + '. ';
+      }
+
+      if (missingCode.length > 0) {
+        feedback += 'Check required structure: ' + missingCode.join(', ') + '. ';
+      }
+
+      if (passedAll) {
+        feedback = 'All automatic checks passed.';
+      }
+
+      return {
+        passedAll: passedAll,
+        score: score,
+        feedback: feedback.trim(),
+        missingOutput: missingOutput,
+        missingCode: missingCode
+      };
+    }
+
+    function normalizeForCheck(value) {
+      return String(value)
+        .toLowerCase()
+        .replace(/\r\n/g, '\n')
+        .replace(/\\n/g, '\n')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    async function evaluateAndSaveProgress() {
+      if (!saveStudentProfile()) {
+        return;
+      }
+
+      const exercise = getExercise(activeExerciseId);
+      currentAutoInputs = (exercise.testInputs || []).slice();
+
+      await runPythonCode();
+
+      const evaluation = evaluateExerciseResult(exercise, lastRun.ok === true);
+      const automaticStatus = evaluation.passedAll ? 'Mastery evidence' : (lastRun.ok ? 'Needs revision' : 'Needs revision');
+
+      manualStatus.value = automaticStatus;
+
+      await submitProgress(automaticStatus, evaluation);
+    }
+
+    async function saveManualProgress() {
+      if (!saveStudentProfile()) {
+        return;
+      }
+
+      const exercise = getExercise(activeExerciseId);
+      const evaluation = {
+        passedAll: false,
+        score: lastRun.ok ? 60 : 0,
+        feedback: 'Manual save. No automatic evaluation was requested.',
+        missingOutput: [],
+        missingCode: []
+      };
+
+      await submitProgress(manualStatus.value, evaluation);
+    }
+
+    function submitProgress(statusValue, evaluation) {
+      const validation = validateStudentProfile();
+      const exercise = getExercise(activeExerciseId);
+      const savedAt = new Date().toLocaleString();
+
+      const payload = {
+        timestamp: new Date().toISOString(),
+        studentName: validation.name,
+        studentEmail: validation.email,
+        exerciseId: exercise.id,
+        level: exercise.level,
+        topic: exercise.topic,
+        title: exercise.title,
+        engine: getEngine(),
+        status: statusValue,
+        score: evaluation.score,
+        passed: evaluation.passedAll,
+        feedback: evaluation.feedback,
+        reflection: studentReflection.value.trim(),
+        code: editor.value,
+        output: outputBox.textContent,
+        testInputs: (exercise.testInputs || []).join(' | '),
+        expectedChecks: (exercise.expectedContains || []).join(' | ')
+      };
+
+      setSaveStatus('neutral', 'Saving progress...');
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        saveProgressLocally(payload, savedAt);
+        setSaveStatus('ok', 'Demo mode: progress saved locally. Deploy in Apps Script to save in Sheets.');
+        return Promise.resolve(payload);
+      }
+
+      return new Promise(function (resolve) {
+        google.script.run
+          .withSuccessHandler(function (response) {
+            if (response && response.ok) {
+              saveProgressLocally(payload, response.savedAt || savedAt);
+              setSaveStatus('ok', 'Saved in Google Sheets: ' + (response.savedAt || savedAt));
+            } else {
+              setSaveStatus('bad', response && response.message ? response.message : 'Could not save progress.');
+            }
+            resolve(response);
+          })
+          .withFailureHandler(function (error) {
+            setSaveStatus('bad', 'Saving error: ' + String(error && error.message ? error.message : error));
+            resolve(null);
+          })
+          .submitStudentProgress(payload);
+      });
+    }
+
+    function saveProgressLocally(payload, savedAt) {
+      localProgress[payload.exerciseId] = {
+        status: payload.status,
+        score: payload.score,
+        savedAt: savedAt,
+        feedback: payload.feedback
+      };
+
+      localStorage.setItem('pythonLabProgress', JSON.stringify(localProgress));
+      refreshExerciseStatus(payload.exerciseId);
+      updateExerciseCounter();
+      selectExercise(payload.exerciseId, false);
+    }
+
+    function refreshExerciseStatus(exerciseId) {
+      const tag = document.getElementById('statusTag_' + exerciseId);
+      const saved = localProgress[exerciseId];
+
+      if (tag && saved) {
+        tag.textContent = saved.status;
+      }
+    }
+
+    function setSaveStatus(type, message) {
+      const css = type === 'ok'
+        ? 'background:#dcfae6;color:var(--success);'
+        : type === 'bad'
+          ? 'background:#fee4e2;color:var(--error);'
+          : 'background:#eef4ff;color:var(--blue);';
+
+      saveStatusBox.style = css;
+      saveStatusBox.innerHTML = '<strong>Status:</strong> ' + escapeHtml(message);
+    }
+
+    function loadMyProgress() {
+      const validation = validateStudentProfile();
+
+      if (!validation.ok) {
+        setSaveStatus('bad', validation.message);
+        return;
+      }
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        setSaveStatus('neutral', 'Demo mode: showing progress saved in this browser.');
+        updateExerciseCounter();
+        return;
+      }
+
+      setSaveStatus('neutral', 'Loading previous progress...');
+
+      google.script.run
+        .withSuccessHandler(function (response) {
+          if (!response || !response.ok) {
+            setSaveStatus('bad', response && response.message ? response.message : 'No progress could be loaded.');
+            return;
+          }
+
+          localProgress = {};
+
+          response.progress.forEach(function (item) {
+            localProgress[item.exerciseId] = {
+              status: item.status,
+              score: item.score,
+              savedAt: item.savedAt,
+              feedback: item.feedback
+            };
+          });
+
+          localStorage.setItem('pythonLabProgress', JSON.stringify(localProgress));
+          setupLearningPath();
+          setSaveStatus('ok', 'Loaded ' + response.progress.length + ' exercise record(s).');
+        })
+        .withFailureHandler(function (error) {
+          setSaveStatus('bad', 'Loading error: ' + String(error && error.message ? error.message : error));
+        })
+        .getStudentProgress(validation.email);
+    }
+
+
+    async function loadSelectedPackages(event) {
+      if (getEngine() !== 'pyodide') {
+        appendLine('Library loading is available only with Pyodide.');
+        return;
+      }
+
+      await initializePyodide();
+
+      if (!pyodideReady) {
+        return;
+      }
+
+      const button = event ? event.target : null;
+
+      if (button) {
+        button.disabled = true;
+      }
+
+      try {
+        setStatus('neutral', 'Loading selected libraries...');
+
+        const selected = Array.from(document.querySelectorAll('.library-grid input:checked'))
+          .map(function (input) {
+            return input.value.trim();
+          })
+          .filter(Boolean);
+
+        const extra = document.getElementById('extraPackages').value
+          .split(',')
+          .map(function (p) {
+            return p.trim();
+          })
+          .filter(Boolean);
+
+        const packages = Array.from(new Set(selected.concat(extra)));
+
+        if (packages.length === 0) {
+          appendLine('No packages selected.');
+          setStatus('ok', 'Ready.');
+          return;
+        }
+
+        appendLine('Loading packages: ' + packages.join(', '));
+
+        for (const pkg of packages) {
+          try {
+            if (pkg === 'sqlite3') {
+              appendLine('sqlite3 is normally part of Python standard library.');
+              continue;
+            }
+
+            await pyodide.loadPackage(pkg);
+            appendLine('Loaded: ' + pkg);
+
+          } catch (loadErr) {
+            appendLine('Trying micropip for: ' + pkg);
+
+            try {
+              await pyodide.loadPackage('micropip');
+              const safePkg = JSON.stringify(pkg);
+
+              await pyodide.runPythonAsync(`
+import micropip
+await micropip.install(${safePkg})
+`);
+              appendLine('Installed with micropip: ' + pkg);
+
+            } catch (microErr) {
+              appendLine('Could not load ' + pkg + ': ' + String(microErr));
+            }
+          }
+        }
+
+        setStatus('ok', 'Library loading finished.');
+
+      } catch (err) {
+        setStatus('bad', 'Library loading error.');
+        appendLine(String(err));
+
+      } finally {
+        if (button) {
+          button.disabled = false;
+        }
+      }
+    }
+
+    async function runPythonCode() {
+      if (activeLabMode === 'evidence' && !week2Evidence.predictionLocked) {
+        setStatus('bad', 'Complete and lock Part A before running Python code.');
+        showEvidencePart('A');
+        return;
+      }
+
+      const runButton = document.getElementById('runButton');
+      runButton.disabled = true;
+      runButton.textContent = 'Running...';
+
+      try {
+        if (getEngine() === 'brython') {
+          if (!brythonReady || !window.runBrythonCode) {
+            appendLine('Brython is not ready yet.');
+            return;
+          }
+
+          window.runBrythonCode();
+          return;
+        }
+
+        await runPyodideCode();
+
+      } finally {
+        runButton.disabled = false;
+        updatePrimaryRunButton();
+      }
+    }
+
+    async function runPyodideCode() {
+      await initializePyodide();
+
+      if (!pyodideReady) {
+        return;
+      }
+
+      resetOutputAreas();
+      setStatus('neutral', 'Running with Pyodide...');
+
+      try {
+        const code = editor.value;
+
+        try {
+          await pyodide.loadPackagesFromImports(code);
+        } catch (autoLoadError) {
+          appendLine('Package auto-loading warning: ' + String(autoLoadError));
+        }
+
+        await pyodide.runPythonAsync(`
+try:
+    import matplotlib
+    matplotlib.use("AGG")
+except Exception:
+    pass
+`);
+
+        await pyodide.runPythonAsync(code);
+        await renderPyodidePlots();
+
+        setStatus('ok', 'Program finished with Pyodide.');
+        recordRunResult(true, 'Program finished with Pyodide.');
+
+      } catch (err) {
+        setStatus('bad', 'Python error.');
+        appendLine(String(err));
+        recordRunResult(false, 'Python error.');
+      }
+    }
+
+    async function renderPyodidePlots() {
+      try {
+        const plotCode = `
+import io
+import base64
+
+_images = []
+
+try:
+    import matplotlib.pyplot as plt
+
+    for number in plt.get_fignums():
+        figure = plt.figure(number)
+        buffer = io.BytesIO()
+        figure.savefig(buffer, format="png", bbox_inches="tight")
+        buffer.seek(0)
+        image_base64 = base64.b64encode(buffer.read()).decode("utf-8")
+        _images.append(image_base64)
+
+    plt.close("all")
+
+except Exception:
+    pass
+
+_images
+`;
+
+        const imagesProxy = await pyodide.runPythonAsync(plotCode);
+        const images = imagesProxy.toJs();
+
+        if (images.length > 0) {
+          plotArea.innerHTML = '';
+          plotArea.className = '';
+        }
+
+        images.forEach(function (imageBase64) {
+          const img = document.createElement('img');
+          img.src = 'data:image/png;base64,' + imageBase64;
+          plotArea.appendChild(img);
+        });
+
+        if (imagesProxy.destroy) {
+          imagesProxy.destroy();
+        }
+
+      } catch (error) {
+        appendLine('Plot rendering error: ' + String(error));
+      }
+    }
+
+    function resetOutputAreas() {
+      outputBox.textContent = '';
+      plotArea.innerHTML = '';
+      plotArea.className = '';
+      guiPreview.innerHTML = '';
+      guiPreview.className = '';
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxOutput', '');
+      }
+    }
+
+    function normalizeOutput(text) {
+      return String(text)
+        .replace(/\r\n/g, '\n')
+        .replace(/\\n/g, '\n')
+        .replace(/\\t/g, '\t');
+    }
+
+    function appendOutput(text) {
+      if (shellCaptureActive) {
+        appendShellResult(text);
+        return;
+      }
+
+      if (outputBox.textContent === 'No output yet.') {
+        outputBox.textContent = '';
+      }
+
+      outputBox.textContent += normalizeOutput(text);
+      outputBox.scrollTop = outputBox.scrollHeight;
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxOutput', outputBox.textContent);
+      }
+    }
+
+    function appendLine(text) {
+      appendOutput(String(text) + '\n');
+    }
+
+    function loadExample(name) {
+      editor.value = examples[name] || examples.basics;
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxCode', editor.value);
+      } else {
+        week2Evidence.editorCode = editor.value;
+        saveWeek2EvidenceLocal();
+      }
+      updateEditor();
+
+      if (name === 'data') {
+        engineSelect.value = 'pyodide';
+      }
+
+      if (name === 'gui' || name === 'basics') {
+        engineSelect.value = 'brython';
+      }
+
+      changeEngine();
+
+      outputBox.textContent = 'No output yet.';
+      plotArea.innerHTML = 'Matplotlib plots will appear here when using Pyodide.';
+      plotArea.className = 'hint';
+      guiPreview.innerHTML = 'Python browser GUI components will appear here.';
+      guiPreview.className = 'hint';
+
+      setStatus('neutral', 'Example loaded.');
+    }
+
+    function toggleResultFocus(cardId, button) {
+      const dashboard = document.getElementById('liveResults');
+      const card = document.getElementById(cardId);
+      const isFocused = card.classList.contains('result-focus');
+
+      dashboard.querySelectorAll('.result-card').forEach(function (item) {
+        item.classList.remove('result-focus');
+        const focusButton = item.querySelector('.result-focus-button');
+        if (focusButton) {
+          focusButton.textContent = 'Expand';
+        }
+      });
+
+      if (isFocused) {
+        dashboard.classList.remove('has-focus');
+        return;
+      }
+
+      card.classList.add('result-focus');
+      dashboard.classList.add('has-focus');
+      if (button) {
+        button.textContent = 'Restore';
+      }
+    }
+
+    function downloadPythonFile() {
+      if (activeLabMode === 'evidence' && !week2Evidence.predictionLocked) {
+        setStatus('bad', 'Complete and lock Part A before downloading the evidence file.');
+        showEvidencePart('A');
+        return;
+      }
+
+      const code = editor.value || '';
+      if (!code.trim()) {
+        setStatus('bad', 'The Script Editor is empty. Add Python code before downloading.');
+        return;
+      }
+
+      let fileName = 'glm_python_sandbox.py';
+      if (activeLabMode === 'evidence') {
+        collectWeek2EvidenceFromForm();
+        fileName = week2Evidence.b.fileName;
+        if (!/^E1_[A-Za-z0-9-]+_[A-Za-z0-9-]+\.py$/i.test(fileName)) {
+          setStatus('bad', 'Use the filename pattern E1_Lastname_Firstname.py.');
+          showEvidencePart('B');
+          return;
+        }
+      }
+
+      const blob = new Blob([code], { type: 'text/x-python;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxCode', code);
+        setStatus('ok', fileName + ' downloaded from the Practice Sandbox.');
+      } else {
+        week2Evidence.b.fileDownloaded = true;
+        week2Evidence.b.fileReopened = false;
+        week2Evidence.b.reopenedFileName = '';
+        week2Evidence.editorCode = code;
+        saveWeek2EvidenceLocal();
+        updateWeek2EvidenceUI();
+        setStatus('ok', fileName + ' downloaded. Reopen it to complete the file evidence.');
+      }
+    }
+
+    function copyCode() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(editor.value)
+          .then(function () {
+            setStatus('neutral', 'Code copied to clipboard.');
+          })
+          .catch(function () {
+            fallbackCopyCode();
+          });
+      } else {
+        fallbackCopyCode();
+      }
+    }
+
+    function fallbackCopyCode() {
+      const temporary = document.createElement('textarea');
+      temporary.value = editor.value;
+      document.body.appendChild(temporary);
+      temporary.select();
+      document.execCommand('copy');
+      document.body.removeChild(temporary);
+      setStatus('neutral', 'Code copied to clipboard.');
+    }
+
+    function clearEditor() {
+      editor.value = '';
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxCode', '');
+      } else {
+        week2Evidence.editorCode = '';
+        saveWeek2EvidenceLocal();
+      }
+      updateEditor();
+      outputBox.textContent = 'No output yet.';
+      plotArea.innerHTML = 'Matplotlib plots will appear here when using Pyodide.';
+      plotArea.className = 'hint';
+      guiPreview.innerHTML = 'Python browser GUI components will appear here.';
+      guiPreview.className = 'hint';
+      if (activeLabMode === 'sandbox') {
+        localStorage.setItem('glmPythonSandboxOutput', 'No output yet.');
+      }
+      setStatus('neutral', 'Editor cleared.');
+    }
+
+    function updateEditor() {
+      updateLineNumbers();
+      updateHighlight();
+      syncScroll();
+    }
+
+    function updateLineNumbers() {
+      const total = editor.value.split('\n').length;
+      let html = '';
+
+      for (let i = 1; i <= total; i++) {
+        html += i + '<br>';
+      }
+
+      lineNumbers.innerHTML = html;
+    }
+
+    function updateHighlight() {
+      highlight.innerHTML = highlightPython(editor.value) + '\n';
+    }
+
+    function highlightPython(code) {
+      return code.split('\n').map(function (line) {
+        const commentIndex = findPythonCommentIndex(line);
+        const mainPart = commentIndex >= 0 ? line.substring(0, commentIndex) : line;
+        const commentPart = commentIndex >= 0 ? line.substring(commentIndex) : '';
+
+        return highlightPythonNonComment(mainPart) +
+          (commentPart ? '<span class="com">' + escapeHtml(commentPart) + '</span>' : '');
+      }).join('\n');
+    }
+
+    function findPythonCommentIndex(line) {
+      let inString = false;
+      let quote = '';
+      let triple = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+
+        if (!inString && (line.substring(i, i + 3) === '"""' || line.substring(i, i + 3) === "'''")) {
+          inString = true;
+          quote = line.substring(i, i + 3);
+          triple = true;
+          i += 2;
+          continue;
+        }
+
+        if (inString && triple && line.substring(i, i + 3) === quote) {
+          inString = false;
+          triple = false;
+          i += 2;
+          continue;
+        }
+
+        if (!triple && (ch === '"' || ch === "'") && line[i - 1] !== '\\') {
+          if (!inString) {
+            inString = true;
+            quote = ch;
+          } else if (quote === ch) {
+            inString = false;
+          }
+        }
+
+        if (!inString && ch === '#') {
+          return i;
+        }
+      }
+
+      return -1;
+    }
+
+    function highlightPythonNonComment(text) {
+      let result = '';
+      let lastIndex = 0;
+
+      const stringRegex = /("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+      let match;
+
+      while ((match = stringRegex.exec(text)) !== null) {
+        result += highlightPythonPlain(text.substring(lastIndex, match.index));
+        result += '<span class="str">' + escapeHtml(match[0]) + '</span>';
+        lastIndex = match.index + match[0].length;
+      }
+
+      result += highlightPythonPlain(text.substring(lastIndex));
+      return result;
+    }
+
+    function highlightPythonPlain(text) {
+      const tokenRegex =
+        /(\b(?:False|None|True|and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield|match|case)\b|\b(?:print|input|len|range|int|float|str|list|dict|set|tuple|sum|min|max|abs|round|open|type|enumerate|zip|map|filter|sorted|help|dir)\b|\b\d+(?:\.\d+)?\b|==|!=|<=|>=|\+=|-=|\*=|\/=|\/\/=|%=|\+|-|\*|\/|%|=|<|>|:)/g;
+
+      let result = '';
+      let lastIndex = 0;
+      let match;
+
+      while ((match = tokenRegex.exec(text)) !== null) {
+        result += escapeHtml(text.substring(lastIndex, match.index));
+
+        const token = match[0];
+
+        if (/^\d/.test(token)) {
+          result += '<span class="num">' + escapeHtml(token) + '</span>';
+        } else if (/^(print|input|len|range|int|float|str|list|dict|set|tuple|sum|min|max|abs|round|open|type|enumerate|zip|map|filter|sorted|help|dir)$/.test(token)) {
+          result += '<span class="builtin">' + escapeHtml(token) + '</span>';
+        } else if (/^(==|!=|<=|>=|\+=|-=|\*=|\/=|\/\/=|%=|\+|-|\*|\/|%|=|<|>|:)$/.test(token)) {
+          result += '<span class="op">' + escapeHtml(token) + '</span>';
+        } else {
+          result += '<span class="kw">' + escapeHtml(token) + '</span>';
+        }
+
+        lastIndex = match.index + token.length;
+      }
+
+      result += escapeHtml(text.substring(lastIndex));
+      return result;
+    }
+
+    function syncScroll() {
+      highlight.scrollTop = editor.scrollTop;
+      highlight.scrollLeft = editor.scrollLeft;
+      lineNumbers.scrollTop = editor.scrollTop;
+    }
+
+    function setStatus(type, text) {
+      const status = document.getElementById('status');
+      status.className = 'status ' + type;
+      status.textContent = text;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+  </script>
+
+  <script type="text/python">
+from browser import window
+import sys
+import traceback
+import builtins
+import types
+
+
+def browser_input(prompt_text=""):
+    return str(window.getNextPythonInput(str(prompt_text)))
+
+
+builtins.input = browser_input
+
+
+class OutputCatcher:
+    def write(self, text):
+        window.appendOutput(str(text))
+        return len(str(text))
+
+    def flush(self):
+        pass
+
+
+def setup_brython_gui_module():
+    gui = types.ModuleType("gui")
+
+    def clear():
+        window.webgui.clear()
+
+    def title(text):
+        window.webgui.title(str(text))
+
+    def text(value):
+        window.webgui.text(str(value))
+
+    def input(id, placeholder=""):
+        window.webgui.input(str(id), str(placeholder))
+
+    def value(id):
+        return str(window.webgui.value(str(id)))
+
+    def button(label, callback):
+        window.webgui.button(str(label), callback)
+
+    def html(markup):
+        window.webgui.html(str(markup))
+
+    gui.clear = clear
+    gui.title = title
+    gui.text = text
+    gui.input = input
+    gui.value = value
+    gui.button = button
+    gui.html = html
+
+    sys.modules["gui"] = gui
+
+
+setup_brython_gui_module()
+
+
+shell_namespace = {
+    '__name__': '__main__'
+}
+
+
+def reset_brython_shell():
+    global shell_namespace
+    shell_namespace = {
+        '__name__': '__main__'
+    }
+
+
+def run_brython_shell_command(command):
+    global shell_namespace
+
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    sys.stdout = OutputCatcher()
+    sys.stderr = OutputCatcher()
+
+    try:
+        source = str(command)
+
+        try:
+            expression = compile(source, '<shell>', 'eval')
+        except SyntaxError:
+            statement = compile(source, '<shell>', 'exec')
+            exec(statement, shell_namespace)
+        else:
+            result = eval(expression, shell_namespace)
+            if result is not None:
+                window.appendShellResult(repr(result) + '\n')
+
+    except Exception:
+        window.appendShellResult(traceback.format_exc())
+
+    finally:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+
+
+def run_brython_code():
+    window.resetOutputAreas()
+    window.setStatus('neutral', 'Running with Brython...')
+
+    user_code = window.document['editor'].value
+    namespace = {
+        '__name__': '__main__'
+    }
+
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+
+    sys.stdout = OutputCatcher()
+    sys.stderr = OutputCatcher()
+
+    try:
+        exec(user_code, namespace)
+        window.setStatus('ok', 'Program finished with Brython.')
+        window.recordRunResult(True, 'Program finished with Brython.')
+
+    except Exception:
+        window.appendOutput(traceback.format_exc())
+        window.setStatus('bad', 'Python error.')
+        window.recordRunResult(False, 'Python error.')
+
+    finally:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+
+
+window.runBrythonCode = run_brython_code
+window.runBrythonShellCommand = run_brython_shell_command
+window.resetBrythonShell = reset_brython_shell
+  </script>
+</body>
+</html>
